@@ -1,6 +1,7 @@
 // ✅ Improved API client with better error handling
-const BASE_URL =
-  process.env.NODE_ENV === "development" ? "http://localhost:5000" : "/api/v1"; // ✅ Use /api/v1 prefix in production
+// Use the frontend proxy path so requests go through Next.js rewrites
+// and preserve authentication cookies in development and production.
+const BASE_URL = "/api/v1";
 
 // Helper to parse error responses
 const parseError = async (res: Response) => {
