@@ -76,14 +76,14 @@ export function OrderSummary({
         form="checkout-form"
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white h-11 gap-2"
+        className="w-full rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white h-11 gap-2"
       >
         <ShoppingBag className="w-4 h-4" />
-        {isSubmitting ? "Placing Order..." : "Place Order"}
+        {isSubmitting ? "Redirecting to Payment..." : "Place Order & Pay"}
       </Button>
 
       <p className="text-xs text-zinc-400 text-center mt-3">
-        By placing this order, you agree to our terms & conditions
+        You will be redirected to Stripe to complete payment securely
       </p>
     </div>
   );

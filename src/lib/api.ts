@@ -32,12 +32,32 @@ export class ApiRequestError extends Error {
   }
 }
 
-const handleResponse = async (res: Response) => {
+// const handleResponse = async (res: Response) => {
+//   if (!res.ok) {
+//     const apiError = await parseError(res);
+
+//     // Session expired or not authenticated — redirect to login
+//     if (apiError.statusCode === 401) {
+//       if (typeof window !== "undefined") {
+//         window.location.href = "/login";
+//       }
+//     }
+
+//     throw new ApiRequestError(apiError);
+//   }
+//   return res.json();
+// };
+
+const handleResponse = async (res: Response, endpoint: string) => {
   if (!res.ok) {
     const apiError = await parseError(res);
 
-    // Session expired or not authenticated — redirect to login
-    if (apiError.statusCode === 401) {
+    // Only redirect to login on 401 if it's not an auth action endpoint.
+    // For endpoints like change-password, a 401 means "wrong password"
+    // not "session expired" — so we should show the error, not redirect.
+    const isAuthAction = endpoint.includes("/auth/");
+
+    if (apiError.statusCode === 401 && !isAuthAction) {
       if (typeof window !== "undefined") {
         window.location.href = "/login";
       }
@@ -53,7 +73,7 @@ const get = async (endpoint: string) => {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
-  return handleResponse(res);
+  return handleResponse(res, endpoint);
 };
 
 const post = async (endpoint: string, body: unknown) => {
@@ -63,7 +83,7 @@ const post = async (endpoint: string, body: unknown) => {
     credentials: "include",
     body: JSON.stringify(body),
   });
-  return handleResponse(res);
+  return handleResponse(res, endpoint);
 };
 
 const put = async (endpoint: string, body: unknown) => {
@@ -73,7 +93,7 @@ const put = async (endpoint: string, body: unknown) => {
     credentials: "include",
     body: JSON.stringify(body),
   });
-  return handleResponse(res);
+  return handleResponse(res, endpoint);
 };
 
 const patch = async (endpoint: string, body: unknown) => {
@@ -83,17 +103,16 @@ const patch = async (endpoint: string, body: unknown) => {
     credentials: "include",
     body: JSON.stringify(body),
   });
-  return handleResponse(res);
+  return handleResponse(res, endpoint);
 };
 
-// multipart/form-data — no Content-Type header (browser sets it with boundary)
 const postForm = async (endpoint: string, body: FormData) => {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: "POST",
     credentials: "include",
     body,
   });
-  return handleResponse(res);
+  return handleResponse(res, endpoint);
 };
 
 const putForm = async (endpoint: string, body: FormData) => {
@@ -102,7 +121,7 @@ const putForm = async (endpoint: string, body: FormData) => {
     credentials: "include",
     body,
   });
-  return handleResponse(res);
+  return handleResponse(res, endpoint);
 };
 
 const del = async (endpoint: string) => {
@@ -111,7 +130,7 @@ const del = async (endpoint: string) => {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
-  return handleResponse(res);
+  return handleResponse(res, endpoint);
 };
 
 export const api = {

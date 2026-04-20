@@ -64,7 +64,7 @@ export default function AdminUsersPage() {
         setUsers(data.data || data);
         setFilteredUsers(data.data || data);
       } catch (error) {
-        // console.error("Failed to fetch users:", error);
+        console.error("Failed to fetch users:", error);
         toast.error("Failed to load users");
       } finally {
         setIsLoading(false);

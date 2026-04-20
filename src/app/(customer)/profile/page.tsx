@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { ChangePasswordForm } from "@/components/authentication/ChangePasswordForm";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -265,6 +266,10 @@ export default function ProfilePage() {
               </span>
             </div>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <ChangePasswordForm />
         </div>
       </div>
     </div>

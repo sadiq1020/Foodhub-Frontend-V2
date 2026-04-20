@@ -77,20 +77,21 @@ export function CheckoutForm({ register, errors }: CheckoutFormProps) {
         </Field>
 
         {/* Payment Method */}
+        {/* Payment Method */}
         <div className="border-t border-zinc-200 dark:border-zinc-800 pt-5 mt-2">
           <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
             Payment Method
           </h3>
           <div className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
-            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-950/50 flex items-center justify-center">
-              <span className="text-xl">💵</span>
+            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-950/50 flex items-center justify-center">
+              <span className="text-xl">💳</span>
             </div>
             <div>
               <p className="font-medium text-zinc-900 dark:text-zinc-50 text-sm">
-                Cash on Delivery
+                Stripe — Card Payment
               </p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Pay when you receive your order
+                Secured by Stripe. You will be redirected to complete payment.
               </p>
             </div>
           </div>

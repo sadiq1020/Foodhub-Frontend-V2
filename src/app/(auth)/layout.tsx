@@ -1,11 +1,40 @@
+"use client";
+
+import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { data: session, isPending } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isPending && session?.user) {
+      const role = (session.user as { role?: string })?.role;
+      if (role === "ADMIN") {
+        router.replace("/admin/dashboard");
+      } else if (role === "PROVIDER") {
+        router.replace("/provider/dashboard");
+      } else {
+        router.replace("/");
+      }
+    }
+  }, [session, isPending, router]);
+
+  // Show nothing while checking session — prevents flash of login page
+  if (isPending || session?.user) {
+    return (
+      <div className="min-h-screen bg-[#0b0c10] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#0b0c10] text-gray-100">
       <nav className="flex items-center justify-between px-6 md:px-12 py-6">
@@ -20,8 +49,7 @@ export default function AuthLayout({
         </Link>
       </nav>
 
-      {/* Changed justify-center to justify-start and added pt-12 */}
-      <main className="flex-grow flex flex-col items-center justify-start pt-12 px-6">
+      <main className="grow flex flex-col items-center justify-start pt-12 px-6">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-5xl font-extrabold text-white uppercase tracking-tighter mb-3">
             Welcome to <span className="text-orange-500">FOOD</span>HUB
@@ -31,8 +59,7 @@ export default function AuthLayout({
           </p>
         </div>
 
-        {/* This is the ONLY container we need. Increase max-w for wider fields */}
-        <div className="w-full max-w-[500px] bg-zinc-900/40 backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl">
+        <div className="w-full max-w-125 bg-zinc-900/40 backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl">
           {children}
         </div>
       </main>

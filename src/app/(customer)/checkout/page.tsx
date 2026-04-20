@@ -19,7 +19,6 @@ import { handleApiError } from "@/lib/handle-error";
 
 const DELIVERY_FEE = 50;
 
-// ── Zod Schema ─────────────────────────────────────────
 const checkoutSchema = z.object({
   deliveryAddress: z.string().min(10, "Address must be at least 10 characters"),
   phone: z.string().regex(/^[0-9]{10,15}$/, "Phone must be 10-15 digits"),
@@ -46,20 +45,11 @@ export default function CheckoutPage() {
     },
   });
 
-  //  Protected route
   useEffect(() => {
     if (!isPending && !session?.user) {
       router.push("/login");
     }
   }, [session, isPending, router]);
-
-  //  Redirect if cart empty
-  // useEffect(() => {
-  //   if (items.length === 0 && !isPending) {
-  //     toast.error("Your cart is empty");
-  //     router.push("/meals");
-  //   }
-  // }, [items, isPending, router]);
 
   if (isPending) {
     return (
@@ -74,43 +64,49 @@ export default function CheckoutPage() {
   const subtotal = getCartTotal();
   const total = subtotal + DELIVERY_FEE;
 
-  //  Place order
   const onSubmit = async (data: CheckoutFormData) => {
     const toastId = toast.loading("Placing your order...");
 
     try {
-      await api.post("/orders", {
+      const response = await api.post("/orders", {
         deliveryAddress: data.deliveryAddress,
         phone: data.phone,
         notes: data.notes || "",
         items: items.map((item) => ({
           mealId: item.mealId,
           quantity: item.quantity,
-          price: item.price,
         })),
-        subtotal,
-        deliveryFee: DELIVERY_FEE,
-        total,
       });
 
-      toast.success("Order placed successfully!", {
+      // Backend returns { data: { order, payment, paymentUrl } }
+      const paymentUrl = response?.data?.paymentUrl;
+
+      if (!paymentUrl) {
+        toast.error("Payment URL not received. Please try again.", {
+          id: toastId,
+        });
+        return;
+      }
+
+      toast.success("Order placed! Redirecting to payment...", {
         id: toastId,
-        description: "You can track your order in My Orders",
       });
 
+      // Clear cart before leaving — order is created in DB
       clearCart();
-      router.push("/orders");
-    } catch (error: unknown) {
-      // const message =
-      //   error instanceof Error ? error.message : "Failed to place order";
-      // toast.error(message, { id: toastId });
+
+      // Small timeout lets React finish the current render before
+      // navigating away to the external Stripe URL
+      setTimeout(() => {
+        window.location.href = paymentUrl;
+      }, 100);
+    } catch (error) {
       handleApiError(error, toastId);
     }
   };
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      {/* Header */}
       <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         <div className="container mx-auto px-4 py-6">
           <Button
@@ -135,7 +131,6 @@ export default function CheckoutPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Form */}
           <form
             id="checkout-form"
             onSubmit={handleSubmit(onSubmit)}
@@ -144,7 +139,6 @@ export default function CheckoutPage() {
             <CheckoutForm register={register} errors={errors} />
           </form>
 
-          {/* Summary */}
           <div className="w-full lg:w-96 shrink-0">
             <OrderSummary
               items={items}

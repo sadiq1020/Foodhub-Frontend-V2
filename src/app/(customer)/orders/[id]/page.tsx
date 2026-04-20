@@ -1,9 +1,9 @@
 "use client";
 
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { use, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { OrderDeliveryInfo } from "@/components/orders/OrderDeliveryInfo";
@@ -46,6 +46,33 @@ export default function OrderDetailPage({
     name: string;
   } | null>(null);
 
+  const searchParams = useSearchParams();
+  const paymentToastShown = useRef(false);
+
+  // Show payment result toast once when redirected back from Stripe
+  useEffect(() => {
+    if (paymentToastShown.current) return;
+
+    const payment = searchParams.get("payment");
+
+    if (payment === "success") {
+      paymentToastShown.current = true;
+      toast.success("Payment successful! Your order is confirmed.", {
+        duration: 5000,
+        icon: <CheckCircle className="w-4 h-4 text-green-500" />,
+      });
+    } else if (payment === "cancelled") {
+      paymentToastShown.current = true;
+      toast.error(
+        "Payment was cancelled. Your order is saved — you can retry payment by placing a new order.",
+        {
+          duration: 6000,
+          icon: <XCircle className="w-4 h-4 text-red-500" />,
+        },
+      );
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (!isPending && !session?.user) {
       router.push("/login");
@@ -61,7 +88,7 @@ export default function OrderDetailPage({
         const data = await api.get(`/orders/${id}`);
         setOrder(data.data || data);
       } catch (error) {
-        // console.error("Failed to fetch order:", error);
+        console.error("Failed to fetch order:", error);
         toast.error("Order not found");
         router.push("/orders");
       } finally {
@@ -152,6 +179,25 @@ export default function OrderDetailPage({
 
             <div className="flex items-center gap-3">
               <OrderStatusBadge status={order.status} />
+
+              {/* Payment status badge */}
+              {order.paymentStatus && (
+                <span
+                  className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                    order.paymentStatus === "PAID"
+                      ? "bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400"
+                      : order.paymentStatus === "FAILED"
+                        ? "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400"
+                  }`}
+                >
+                  {order.paymentStatus === "PAID"
+                    ? "✓ Paid"
+                    : order.paymentStatus === "FAILED"
+                      ? "Payment Failed"
+                      : "Payment Pending"}
+                </span>
+              )}
 
               {canCancel && (
                 <AlertDialog>

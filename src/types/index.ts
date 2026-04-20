@@ -73,6 +73,7 @@ export type Order = {
   id: string;
   orderNumber: string;
   status: "PLACED" | "PREPARING" | "READY" | "DELIVERED" | "CANCELLED";
+  paymentStatus: "UNPAID" | "PAID" | "FAILED";
   total: number;
   subtotal: number;
   deliveryFee: number;
