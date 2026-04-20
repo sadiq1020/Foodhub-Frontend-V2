@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
+import { handleApiError } from "@/lib/handle-error";
 import type { Order } from "@/types";
 
 export default function OrderDetailPage({
@@ -84,9 +85,10 @@ export default function OrderDetailPage({
       toast.success("Order cancelled successfully", { id: toastId });
       setOrder({ ...order, status: "CANCELLED" });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to cancel order";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to cancel order";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     } finally {
       setIsCancelling(false);
     }

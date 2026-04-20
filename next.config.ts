@@ -67,6 +67,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "deifkwefumgah.cloudfront.net",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com", // ← add this
+      },
     ],
     formats: ["image/webp"],
   },

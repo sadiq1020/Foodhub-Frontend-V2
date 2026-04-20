@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
+import { handleApiError } from "@/lib/handle-error";
 import { Button } from "../ui/button";
 
 // Zod Schema for validation
@@ -150,7 +151,8 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
       });
       router.push("/login");
     } catch (err) {
-      toast.error("Something went wrong, please try again", { id: toastId });
+      // toast.error("Something went wrong, please try again", { id: toastId });
+      handleApiError(err, toastId);
     }
   };
 

@@ -1,3 +1,15 @@
+// ── API Error Types ────────────────────────────────────
+export type ApiErrorDetail = {
+  field: string;
+  message: string;
+};
+
+export type ApiError = {
+  statusCode: number;
+  message: string;
+  errorDetails?: ApiErrorDetail[];
+};
+
 // ── Meal ──────────────────────────────────────────────
 // Used in: MealCard, FeaturedMeals, MealsPage, MealDetail
 export type Meal = {

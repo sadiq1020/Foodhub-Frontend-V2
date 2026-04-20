@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
+import { handleApiError } from "@/lib/handle-error";
 import type { Meal } from "@/types";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -95,9 +96,10 @@ export default function ProviderMenuPage() {
       setDeleteDialogOpen(false);
       setMealToDelete(null);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to delete meal";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to delete meal";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     }
   };
 
@@ -142,7 +144,7 @@ export default function ProviderMenuPage() {
             </div>
             <Button
               onClick={handleAdd}
-              className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white gap-2"
+              className="rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white gap-2"
             >
               <Plus className="w-4 h-4" />
               Add New Meal
@@ -181,7 +183,7 @@ export default function ProviderMenuPage() {
             </p>
             <Button
               onClick={handleAdd}
-              className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
+              className="rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
             >
               Add Your First Meal
             </Button>

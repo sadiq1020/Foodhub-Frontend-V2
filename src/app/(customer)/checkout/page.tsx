@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
+import { handleApiError } from "@/lib/handle-error";
 
 const DELIVERY_FEE = 50;
 
@@ -100,9 +101,10 @@ export default function CheckoutPage() {
       clearCart();
       router.push("/orders");
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to place order";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to place order";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     }
   };
 

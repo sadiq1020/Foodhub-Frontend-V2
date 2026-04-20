@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
+import { handleApiError } from "@/lib/handle-error";
 import type { Category, Meal } from "@/types";
 
 // ── Zod Schema ─────────────────────────────────────────
@@ -162,9 +163,10 @@ export function MealFormDialog({
           const profileResponse = await api.get("/provider/profile");
           providerId = profileResponse.data?.id || profileResponse.id;
         } catch (error) {
-          toast.error("Failed to get provider profile. Please try again.", {
-            id: toastId,
-          });
+          // toast.error("Failed to get provider profile. Please try again.", {
+          //   id: toastId,
+          // });
+          handleApiError(error, toastId);
           return;
         }
       }
@@ -195,9 +197,10 @@ export function MealFormDialog({
       onSuccess(savedMeal);
       reset();
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to save meal";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to save meal";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     }
   };
 
@@ -322,7 +325,7 @@ export function MealFormDialog({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
+              className="rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
             >
               {isSubmitting ? "Saving..." : meal ? "Update Meal" : "Add Meal"}
             </Button>

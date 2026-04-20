@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
+import { handleApiError } from "@/lib/handle-error";
 
 type User = {
   id: string;
@@ -119,9 +120,10 @@ export default function AdminUsersPage() {
         { id: toastId },
       );
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to update user status";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to update user status";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     }
   };
 

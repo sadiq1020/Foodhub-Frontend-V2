@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
+import { handleApiError } from "@/lib/handle-error";
 import type { User as UserType } from "@/types";
 
 const profileSchema = z.object({
@@ -111,9 +112,10 @@ export default function ProfilePage() {
         window.location.reload();
       }, 1000);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to update profile";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to update profile";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     }
   };
 
@@ -231,7 +233,7 @@ export default function ProfilePage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
+                className="rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
               >
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>

@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
+import { handleApiError } from "@/lib/handle-error";
 
 type OrderItem = {
   id: string;
@@ -110,9 +111,10 @@ export default function ProviderOrdersPage() {
 
       toast.success("Status updated successfully", { id: toastId });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to update status";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to update status";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     }
   };
 

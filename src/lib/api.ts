@@ -1,114 +1,117 @@
-// ✅ Improved API client with better error handling
-// Use the frontend proxy path so requests go through Next.js rewrites
-// and preserve authentication cookies in development and production.
+import type { ApiError } from "@/types";
+
 const BASE_URL = "/api/v1";
 
-// Helper to parse error responses
-const parseError = async (res: Response) => {
+// Parse the error response from the backend into a structured ApiError
+const parseError = async (res: Response): Promise<ApiError> => {
   try {
     const data = await res.json();
-    return data.message || data.error || "Something went wrong";
+    return {
+      statusCode: res.status,
+      message: data.message || data.error || "Something went wrong",
+      errorDetails: data.errorDetails,
+    };
   } catch {
-    return `HTTP ${res.status}: ${res.statusText}`;
+    return {
+      statusCode: res.status,
+      message: `HTTP ${res.status}: ${res.statusText}`,
+    };
   }
 };
 
-// GET request
-const get = async (endpoint: string) => {
-  const fullUrl = `${BASE_URL}${endpoint}`;
-  // console.log("🌐 API GET:", fullUrl);
+// Custom error class that carries the full API error shape
+export class ApiRequestError extends Error {
+  public statusCode: number;
+  public errorDetails?: ApiError["errorDetails"];
 
-  const res = await fetch(fullUrl, {
-    headers: {
-      "Content-Type": "application/json",
-    },
+  constructor(apiError: ApiError) {
+    super(apiError.message);
+    this.name = "ApiRequestError";
+    this.statusCode = apiError.statusCode;
+    this.errorDetails = apiError.errorDetails;
+  }
+}
+
+const handleResponse = async (res: Response) => {
+  if (!res.ok) {
+    const apiError = await parseError(res);
+
+    // Session expired or not authenticated — redirect to login
+    if (apiError.statusCode === 401) {
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
+
+    throw new ApiRequestError(apiError);
+  }
+  return res.json();
+};
+
+const get = async (endpoint: string) => {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
-
-  // console.log("📡 Response status:", res.status);
-  // console.log("📡 Response URL:", res.url);
-
-  if (!res.ok) {
-    const error = await parseError(res);
-    throw new Error(error);
-  }
-
-  return await res.json();
+  return handleResponse(res);
 };
 
-// POST request
 const post = async (endpoint: string, body: unknown) => {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(body),
   });
-
-  if (!res.ok) {
-    const error = await parseError(res);
-    throw new Error(error);
-  }
-
-  return await res.json();
+  return handleResponse(res);
 };
 
-// PUT request
 const put = async (endpoint: string, body: unknown) => {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(body),
   });
-
-  if (!res.ok) {
-    const error = await parseError(res);
-    throw new Error(error);
-  }
-
-  return await res.json();
+  return handleResponse(res);
 };
 
-// PATCH request
 const patch = async (endpoint: string, body: unknown) => {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(body),
   });
-
-  if (!res.ok) {
-    const error = await parseError(res);
-    throw new Error(error);
-  }
-
-  return await res.json();
+  return handleResponse(res);
 };
 
-// DELETE request
+// multipart/form-data — no Content-Type header (browser sets it with boundary)
+const postForm = async (endpoint: string, body: FormData) => {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    method: "POST",
+    credentials: "include",
+    body,
+  });
+  return handleResponse(res);
+};
+
+const putForm = async (endpoint: string, body: FormData) => {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    method: "PUT",
+    credentials: "include",
+    body,
+  });
+  return handleResponse(res);
+};
+
 const del = async (endpoint: string) => {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
-
-  if (!res.ok) {
-    const error = await parseError(res);
-    throw new Error(error);
-  }
-
-  return await res.json();
+  return handleResponse(res);
 };
 
 export const api = {
@@ -116,22 +119,7 @@ export const api = {
   post,
   put,
   patch,
+  postForm, // ← new — for Cloudinary image uploads
+  putForm, // ← new — for Cloudinary image uploads
   delete: del,
 };
-
-// GET request
-// const get = async (endpoint: string) => {
-//   const res = await fetch(`${BASE_URL}${endpoint}`, {
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     credentials: "include",
-//   });
-
-//   if (!res.ok) {
-//     const error = await parseError(res);
-//     throw new Error(error);
-//   }
-
-//   return await res.json();
-// };

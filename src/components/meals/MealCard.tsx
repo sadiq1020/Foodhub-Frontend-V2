@@ -78,7 +78,7 @@ export function MealCard({ meal }: { meal: Meal }) {
             }`}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-orange-100 to-rose-100 dark:from-orange-950/50 dark:to-rose-950/50 flex items-center justify-center">
+          <div className="w-full h-full bg-linear-to-br from-orange-100 to-rose-100 dark:from-orange-950/50 dark:to-rose-950/50 flex items-center justify-center">
             <span className="text-4xl">🍽️</span>
           </div>
         )}

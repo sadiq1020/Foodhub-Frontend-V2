@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
+import { handleApiError } from "@/lib/handle-error";
 
 type Category = {
   id: string;
@@ -137,9 +138,10 @@ export function CategoryFormDialog({
       reset();
     } catch (error: unknown) {
       // console.error("❌ Error details:", error);
-      const message =
-        error instanceof Error ? error.message : "Failed to save category";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to save category";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     }
   };
 
@@ -202,7 +204,7 @@ export function CategoryFormDialog({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
+              className="rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
             >
               {isSubmitting
                 ? "Saving..."

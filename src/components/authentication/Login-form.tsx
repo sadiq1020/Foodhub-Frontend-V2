@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
 import { Button } from "../ui/button";
 
 const formSchema = z.object({
@@ -124,6 +125,15 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
               />
               {errors.password && <FieldError errors={[errors.password]} />}
             </Field>
+
+            <div className="flex justify-end -mt-2">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-orange-500 hover:text-orange-600 transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </FieldGroup>
         </form>
 

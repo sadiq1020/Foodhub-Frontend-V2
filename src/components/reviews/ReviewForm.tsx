@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
+import { handleApiError } from "@/lib/handle-error";
 
 const reviewSchema = z.object({
   rating: z.number().min(1, "Please select a rating").max(5),
@@ -80,9 +81,10 @@ export function ReviewForm({
       onSuccess(mealId); // ✅ Pass mealId so caller can navigate to the meal page
       onOpenChange(false);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to submit review";
-      toast.error(message, { id: toastId });
+      // const message =
+      //   error instanceof Error ? error.message : "Failed to submit review";
+      // toast.error(message, { id: toastId });
+      handleApiError(error, toastId);
     }
   };
 
