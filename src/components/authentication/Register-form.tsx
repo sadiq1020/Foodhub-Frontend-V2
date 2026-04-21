@@ -152,12 +152,10 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
       }
 
       // Step 3: Success!
-      toast.success("Account created successfully! Please log in.", {
-        id: toastId,
-      });
-      // router.push("/login");
+      toast.dismiss(toastId);
       setRegisteredEmail(data.email);
       setVerificationStep(true);
+      toast.success("Check your email for a 6-digit verification code.");
     } catch (err) {
       // toast.error("Something went wrong, please try again", { id: toastId });
       handleApiError(err, toastId);
