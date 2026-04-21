@@ -1,7 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { ImageIcon, X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -34,43 +36,28 @@ import { api } from "@/lib/api";
 import { handleApiError } from "@/lib/handle-error";
 import type { Category, Meal } from "@/types";
 
-// ── Zod Schema ─────────────────────────────────────────
 const mealSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().optional(),
   price: z.number().min(1, "Price must be at least 1"),
   categoryId: z.string().min(1, "Category is required"),
-  image: z
-    .string()
-    .optional()
-    .refine(
-      (url) => {
-        // Allow empty string
-        if (!url || url === "") return true;
-
-        // Check if valid URL
-        try {
-          const urlObj = new URL(url);
-          const allowedDomains = ["images.unsplash.com"];
-          return allowedDomains.includes(urlObj.hostname);
-        } catch {
-          return false;
-        }
-      },
-      {
-        message:
-          "Image must be from images.unsplash.com or your CloudFront domain",
-      },
-    ),
   dietary: z.string().optional(),
 });
 
 type MealFormData = z.infer<typeof mealSchema>;
 
+const DIETARY_OPTIONS = [
+  { value: "vegetarian", label: "Vegetarian" },
+  { value: "vegan", label: "Vegan" },
+  { value: "non-vegetarian", label: "Non-Vegetarian" },
+  { value: "halal", label: "Halal" },
+  { value: "gluten-free", label: "Gluten-Free" },
+];
+
 interface MealFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  meal: Meal | null; // null = add mode, Meal = edit mode
+  meal: Meal | null;
   onSuccess: (meal: Meal) => void;
 }
 
@@ -82,6 +69,9 @@ export function MealFormDialog({
 }: MealFormDialogProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -97,7 +87,6 @@ export function MealFormDialog({
       description: "",
       price: 0,
       categoryId: "",
-      image: "",
       dietary: "",
     },
   });
@@ -105,26 +94,24 @@ export function MealFormDialog({
   const categoryId = watch("categoryId");
   const dietary = watch("dietary");
 
-  //  Fetch categories
+  // Fetch categories when dialog opens
   useEffect(() => {
+    if (!open) return;
     const fetchCategories = async () => {
       try {
         setIsLoadingCategories(true);
         const data = await api.get("/categories");
         setCategories(data.data || data);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
+      } catch {
+        // ignore
       } finally {
         setIsLoadingCategories(false);
       }
     };
-
-    if (open) {
-      fetchCategories();
-    }
+    fetchCategories();
   }, [open]);
 
-  //  Pre-fill form when editing
+  // Pre-fill form when editing
   useEffect(() => {
     if (meal) {
       reset({
@@ -132,60 +119,93 @@ export function MealFormDialog({
         description: meal.description || "",
         price: meal.price,
         categoryId: meal.category.id,
-        image: meal.image || "",
         dietary: Array.isArray(meal.dietary)
           ? meal.dietary[0] || ""
           : meal.dietary || "",
       });
+      // Show existing image as preview
+      setImagePreview(meal.image || null);
+      setImageFile(null);
     } else {
       reset({
         name: "",
         description: "",
         price: 0,
         categoryId: "",
-        image: "",
         dietary: "",
       });
+      setImagePreview(null);
+      setImageFile(null);
     }
   }, [meal, reset]);
 
-  //  Submit handler - updated
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+    if (!allowed.includes(file.type)) {
+      toast.error("Only JPG, PNG and WebP images are allowed");
+      return;
+    }
+
+    // Validate file size — 5MB max
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const onSubmit = async (data: MealFormData) => {
     const toastId = toast.loading(
       meal ? "Updating meal..." : "Creating meal...",
     );
 
     try {
+      // Get provider ID
       let providerId = meal?.provider?.id;
-
       if (!providerId) {
-        try {
-          const profileResponse = await api.get("/provider/profile");
-          providerId = profileResponse.data?.id || profileResponse.id;
-        } catch (error) {
-          // toast.error("Failed to get provider profile. Please try again.", {
-          //   id: toastId,
-          // });
-          handleApiError(error, toastId);
+        const profileResponse = await api.get("/provider/profile");
+        providerId = profileResponse.data?.id || profileResponse.id;
+        if (!providerId) {
+          toast.error("Failed to get provider profile.", { id: toastId });
           return;
         }
       }
 
-      const payload = {
-        ...data,
-        providerId,
-        price: Number(data.price),
-        image: data.image || null,
-        dietary: data.dietary ? [data.dietary] : null,
-        description: data.description || null,
-      };
+      // Build FormData — backend expects multipart/form-data
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("price", String(data.price));
+      formData.append("categoryId", data.categoryId);
+      formData.append("providerId", providerId);
+      if (data.description) formData.append("description", data.description);
+      if (data.dietary) {
+        // Backend expects JSON array string
+        formData.append("dietary", JSON.stringify([data.dietary]));
+      }
+      // Only append image if a new file was selected
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
 
       let savedMeal;
       if (meal) {
-        const response = await api.put(`/meals/${meal.id}`, payload);
+        const response = await api.putForm(`/meals/${meal.id}`, formData);
         savedMeal = response.data || response;
       } else {
-        const response = await api.post("/meals", payload);
+        const response = await api.postForm("/meals", formData);
         savedMeal = response.data || response;
       }
 
@@ -196,10 +216,8 @@ export function MealFormDialog({
 
       onSuccess(savedMeal);
       reset();
-    } catch (error: unknown) {
-      // const message =
-      //   error instanceof Error ? error.message : "Failed to save meal";
-      // toast.error(message, { id: toastId });
+      clearImage();
+    } catch (error) {
       handleApiError(error, toastId);
     }
   };
@@ -278,35 +296,86 @@ export function MealFormDialog({
               {errors.categoryId && <FieldError errors={[errors.categoryId]} />}
             </Field>
 
-            {/* Image URL */}
-            <Field data-invalid={!!errors.image}>
-              <FieldLabel htmlFor="image">Image URL</FieldLabel>
-              <Input
-                id="image"
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                {...register("image")}
+            {/* Image Upload */}
+            <Field>
+              <FieldLabel>Meal Image</FieldLabel>
+
+              {/* Preview */}
+              {imagePreview ? (
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 mb-2">
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-colors"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full aspect-video rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-orange-400 dark:hover:border-orange-500 transition-colors mb-2"
+                >
+                  <ImageIcon className="w-8 h-8 text-zinc-400" />
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Click to upload image
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    JPG, PNG, WebP — max 5MB
+                  </p>
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
               />
+
+              {!imagePreview && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full rounded-xl"
+                >
+                  Choose Image
+                </Button>
+              )}
+
               <FieldDescription>
-                Enter a valid image URL (optional)
+                Upload a photo of your meal (optional)
               </FieldDescription>
-              {errors.image && <FieldError errors={[errors.image]} />}
             </Field>
 
             {/* Dietary */}
             <Field>
               <FieldLabel>Dietary Type</FieldLabel>
               <Select
-                value={dietary}
-                onValueChange={(value) => setValue("dietary", value)}
+                value={dietary || "none"}
+                onValueChange={(value) =>
+                  setValue("dietary", value === "none" ? "" : value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select dietary type (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="VEGAN">Vegan</SelectItem>
-                  <SelectItem value="VEGETARIAN">Vegetarian</SelectItem>
-                  <SelectItem value="NON_VEG">Non-Veg</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
+                  {DIETARY_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </Field>

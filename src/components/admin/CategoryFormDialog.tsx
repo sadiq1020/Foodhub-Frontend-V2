@@ -1,7 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useRef } from "react";
+import { ImageIcon, X } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -34,28 +36,6 @@ type Category = {
 
 const categorySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  image: z
-    .string()
-    .optional()
-    .refine(
-      (url) => {
-        if (!url || url === "") return true;
-        try {
-          const urlObj = new URL(url);
-          const allowedDomains = [
-            "images.unsplash.com",
-            "deifkwefumgah.cloudfront.net",
-          ];
-          return allowedDomains.includes(urlObj.hostname);
-        } catch {
-          return false;
-        }
-      },
-      {
-        message:
-          "Image must be from images.unsplash.com or your CloudFront domain",
-      },
-    ),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -73,6 +53,10 @@ export function CategoryFormDialog({
   category,
   onSuccess,
 }: CategoryFormDialogProps) {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const {
     register,
     handleSubmit,
@@ -80,77 +64,105 @@ export function CategoryFormDialog({
     reset,
   } = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
-    defaultValues: {
-      name: "",
-      image: "",
-    },
+    defaultValues: { name: "" },
   });
 
-  // Reset form correctly:
-  // - When editing: populate with category data
-  // - When adding new (category=null): reset to empty ONLY when dialog first opens
-  // - While dialog is open and user is typing: never reset (preserves values on tab switch)
+  // Reset form on open
   const prevOpenRef = useRef(false);
   useEffect(() => {
     const justOpened = open && !prevOpenRef.current;
     prevOpenRef.current = open;
-
-    if (!justOpened) return; // Already open — don't touch form values
+    if (!justOpened) return;
 
     if (category) {
-      reset({ name: category.name, image: category.image || "" });
+      reset({ name: category.name });
     } else {
-      reset({ name: "", image: "" });
+      reset({ name: "" });
     }
-  }, [open, category, reset]); // ✅ Only resets on the open→true transition
 
-  const onSubmit = async (data: CategoryFormData) => {
-    const toastId = toast.loading(
-      category ? "Updating category..." : "Creating category...",
-    );
+    // Batch image state into a single update after the dialog opens
+    const newPreview = category?.image || null;
+    setImagePreview(newPreview);
+    setImageFile(null);
+  }, [open, category, reset]);
 
-    try {
-      const payload = {
-        name: data.name,
-        image: data.image || null,
-      };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      // console.log("📤 Sending payload:", payload);
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+    if (!allowed.includes(file.type)) {
+      toast.error("Only JPG, PNG and WebP images are allowed");
+      return;
+    }
 
-      let savedCategory;
-      if (category) {
-        const response = await api.put(`/categories/${category.id}`, payload);
-        savedCategory = response.data || response;
-      } else {
-        const response = await api.post("/categories", payload);
-        // console.log("📥 Response:", response);
-        savedCategory = response.data || response;
-      }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be smaller than 2MB");
+      return;
+    }
 
-      toast.success(
-        category
-          ? "Category updated successfully!"
-          : "Category created successfully!",
-        { id: toastId },
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearImage = useCallback(() => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, []);
+
+  const onSubmit = useCallback(
+    async (data: CategoryFormData) => {
+      const toastId = toast.loading(
+        category ? "Updating category..." : "Creating category...",
       );
 
-      onSuccess(savedCategory);
-      reset();
-    } catch (error: unknown) {
-      // console.error("❌ Error details:", error);
-      // const message =
-      //   error instanceof Error ? error.message : "Failed to save category";
-      // toast.error(message, { id: toastId });
-      handleApiError(error, toastId);
-    }
-  };
+      try {
+        const formData = new FormData();
+        formData.append("name", data.name);
+        if (imageFile) {
+          formData.append("image", imageFile);
+        }
+
+        let savedCategory;
+        if (category) {
+          const response = await api.putForm(
+            `/categories/${category.id}`,
+            formData,
+          );
+          savedCategory = response.data || response;
+        } else {
+          const response = await api.postForm("/categories", formData);
+          savedCategory = response.data || response;
+        }
+
+        toast.success(
+          category
+            ? "Category updated successfully!"
+            : "Category created successfully!",
+          { id: toastId },
+        );
+
+        onSuccess(savedCategory);
+        reset();
+        clearImage();
+      } catch (error) {
+        handleApiError(error, toastId);
+      }
+    },
+    [category, imageFile, onSuccess, reset],
+  );
+  // const submitHandler = useCallback(handleSubmit(onSubmit), [
+  //   handleSubmit,
+  //   onSubmit,
+  // ]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="max-w-md"
         onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()} // ✅ Also prevent other interactions
+        onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>
@@ -163,8 +175,15 @@ export function CategoryFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit(onSubmit)(e);
+          }}
+          className="space-y-6"
+        >
           <FieldGroup>
+            {/* Name */}
             <Field data-invalid={!!errors.name}>
               <FieldLabel htmlFor="name">Category Name *</FieldLabel>
               <Input
@@ -176,19 +195,64 @@ export function CategoryFormDialog({
               {errors.name && <FieldError errors={[errors.name]} />}
             </Field>
 
-            <Field data-invalid={!!errors.image}>
-              <FieldLabel htmlFor="image">Image URL</FieldLabel>
-              <Input
-                id="image"
-                type="url"
-                placeholder="https://images.unsplash.com/photo-..."
-                autoComplete="off"
-                {...register("image")}
+            {/* Image Upload */}
+            <Field>
+              <FieldLabel>Category Image</FieldLabel>
+
+              {imagePreview ? (
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 mb-2">
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center transition-colors"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full aspect-video rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-orange-400 dark:hover:border-orange-500 transition-colors mb-2"
+                >
+                  <ImageIcon className="w-8 h-8 text-zinc-400" />
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Click to upload image
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    JPG, PNG, WebP — max 2MB
+                  </p>
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
               />
+
+              {!imagePreview && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full rounded-xl"
+                >
+                  Choose Image
+                </Button>
+              )}
+
               <FieldDescription>
-                Must be from images.unsplash.com or CloudFront (optional)
+                Upload a category image (optional)
               </FieldDescription>
-              {errors.image && <FieldError errors={[errors.image]} />}
             </Field>
           </FieldGroup>
 
@@ -218,18 +282,3 @@ export function CategoryFormDialog({
     </Dialog>
   );
 }
-
-// // ✅ Fixed - only reset on category change
-// useEffect(() => {
-//   if (category) {
-//     reset({
-//       name: category.name,
-//       image: category.image || "",
-//     });
-//   } else if (open && !category) {
-//     reset({
-//       name: "",
-//       image: "",
-//     });
-//   }
-// }, [category, open, reset]);
