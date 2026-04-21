@@ -1,3 +1,12 @@
+// ── Pagination ────────────────────────────────────
+
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
 // ── API Error Types ────────────────────────────────────
 export type ApiErrorDetail = {
   field: string;

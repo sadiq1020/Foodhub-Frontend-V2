@@ -14,37 +14,40 @@ import { Category } from "@/types";
 import { SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-// type Category = {
-//   id: string;
-//   name: string;
-// };
-
 export type FilterState = {
   search: string;
   categoryId: string;
   dietary: string[];
   minPrice: string;
   maxPrice: string;
+  sortBy: string;
+  sortOrder: "asc" | "desc";
 };
 
 const DIETARY_OPTIONS = [
   {
-    value: "VEGAN",
+    value: "vegan",
     label: "Vegan",
     color:
       "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300 border-green-200 dark:border-green-800",
   },
   {
-    value: "VEGETARIAN",
+    value: "vegetarian",
     label: "Vegetarian",
     color:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
   },
   {
-    value: "NON_VEG",
+    value: "non-vegetarian",
     label: "Non-Veg",
     color:
       "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 border-red-200 dark:border-red-800",
+  },
+  {
+    value: "halal",
+    label: "Halal",
+    color:
+      "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-200 dark:border-blue-800",
   },
 ];
 
@@ -54,6 +57,8 @@ const DEFAULT_FILTERS: FilterState = {
   dietary: [],
   minPrice: "",
   maxPrice: "",
+  sortBy: "createdAt",
+  sortOrder: "desc",
 };
 
 interface MealFiltersProps {
@@ -72,20 +77,18 @@ export function MealFilters({
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchInput, setSearchInput] = useState(initialFilters?.search || "");
 
-  // Fetch categories for dropdown
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const data = await api.get("/categories");
         setCategories(data.data || data);
       } catch {
-        // console.error("Failed to fetch categories");
+        // ignore
       }
     };
     fetchCategories();
   }, []);
 
-  // Update filter and notify parent
   const handleFilterChange = (
     key: keyof FilterState,
     value: string | string[],
@@ -94,37 +97,37 @@ export function MealFilters({
     setFilters(updated);
     onFilterChange(updated);
   };
-  //  Debounce search input 500ms
+
   useEffect(() => {
     const timer = setTimeout(() => {
       handleFilterChange("search", searchInput);
     }, 500);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
 
-  //  Toggle dietary badge (multi-select)
   const toggleDietary = (value: string) => {
     const current = filters.dietary;
     const updated = current.includes(value)
-      ? current.filter((d) => d !== value) // remove if already selected
-      : [...current, value]; // add if not selected
+      ? current.filter((d) => d !== value)
+      : [...current, value];
     handleFilterChange("dietary", updated);
   };
 
-  //  Clear all filters
   const clearFilters = () => {
     setFilters(DEFAULT_FILTERS);
     setSearchInput("");
     onFilterChange(DEFAULT_FILTERS);
   };
 
-  // Check if any filter is active
   const hasActiveFilters =
     filters.search ||
     filters.categoryId ||
     filters.dietary.length > 0 ||
     filters.minPrice ||
-    filters.maxPrice;
+    filters.maxPrice ||
+    filters.sortBy !== "createdAt" ||
+    filters.sortOrder !== "desc";
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 space-y-5">
@@ -185,7 +188,7 @@ export function MealFilters({
         </Select>
       </div>
 
-      {/* Dietary - Multi select badges */}
+      {/* Dietary */}
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
           Dietary
@@ -235,6 +238,38 @@ export function MealFilters({
             min={0}
           />
         </div>
+      </div>
+
+      {/* Sort */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+          Sort By
+        </label>
+        <Select
+          value={`${filters.sortBy}-${filters.sortOrder}`}
+          onValueChange={(value) => {
+            const [sortBy, sortOrder] = value.split("-");
+            const updated = {
+              ...filters,
+              sortBy,
+              sortOrder: sortOrder as "asc" | "desc",
+            };
+            setFilters(updated);
+            onFilterChange(updated);
+          }}
+        >
+          <SelectTrigger className="rounded-xl border-zinc-200 dark:border-zinc-700">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="createdAt-desc">Newest First</SelectItem>
+            <SelectItem value="createdAt-asc">Oldest First</SelectItem>
+            <SelectItem value="price-asc">Price: Low to High</SelectItem>
+            <SelectItem value="price-desc">Price: High to Low</SelectItem>
+            <SelectItem value="name-asc">Name: A to Z</SelectItem>
+            <SelectItem value="name-desc">Name: Z to A</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ import { ModeToggle } from "./ModeToggle";
 // nav links
 const navLinks = [
   { title: "Browse Meals", url: "/meals" },
-  { title: "Providers", url: "/providers" },
+  { title: "Providers", url: "/provider-profile" },
 ];
 
 const Navbar = ({ className }: { className?: string }) => {

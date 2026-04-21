@@ -1,36 +1,28 @@
 "use client";
 
 import { OrderCard } from "@/components/orders/OrderCard";
+import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
-import type { Order } from "@/types";
+import type { Order, PaginationMeta } from "@/types";
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-const CACHE_KEY = (userId: string) => `foodhub_orders_${userId}`;
+const LIMIT = 10;
 
-function getCached(userId: string): Order[] | null {
-  try {
-    const raw = sessionStorage.getItem(CACHE_KEY(userId));
-    return raw ? (JSON.parse(raw) as Order[]) : null;
-  } catch {
-    return null;
-  }
-}
+const STATUS_TABS = [
+  { value: "", label: "All" },
+  { value: "PLACED", label: "Placed" },
+  { value: "PREPARING", label: "Preparing" },
+  { value: "READY", label: "Ready" },
+  { value: "DELIVERED", label: "Delivered" },
+  { value: "CANCELLED", label: "Cancelled" },
+];
 
-function setCached(userId: string, data: Order[]) {
-  try {
-    sessionStorage.setItem(CACHE_KEY(userId), JSON.stringify(data));
-  } catch {
-    // ignore
-  }
-}
-
-//  Loading skeleton
 function OrdersListSkeleton() {
   return (
     <div className="space-y-4">
@@ -61,48 +53,53 @@ export default function OrdersPage() {
   const { data: session, isPending } = useSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [activeStatus, setActiveStatus] = useState("");
 
-  //  Protected route
   useEffect(() => {
     if (!isPending && !session?.user) {
       router.push("/login");
     }
   }, [session, isPending, router]);
 
-  useEffect(() => {
-    if (!session?.user) return;
+  const fetchOrders = useCallback(
+    async (status: string, currentPage: number) => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (status) params.set("status", status);
+        params.set("page", String(currentPage));
+        params.set("limit", String(LIMIT));
 
-    const userId = session.user.id;
-
-    // ✅ Read cache and fetch in one effect, batch all state updates together
-    // to satisfy the linter (no cascading setState calls).
-    const run = async () => {
-      const cached = getCached(userId);
-
-      // Batch: if we have cached data, show it and mark loaded in one update
-      if (cached) {
-        setOrders(cached);
+        const data = await api.get(`/orders?${params.toString()}`);
+        setOrders(data.data || []);
+        setMeta(data.meta || null);
+      } catch {
+        setOrders([]);
+        setMeta(null);
+      } finally {
         setIsLoading(false);
       }
+    },
+    [],
+  );
 
-      // Always fetch fresh data in the background
-      try {
-        const data = await api.get("/orders");
-        const fresh: Order[] = data.data || data;
-        setCached(userId, fresh);
-        // Single setState call — no cascade
-        setOrders(fresh);
-        if (!cached) setIsLoading(false); // only needed if no cache was present
-      } catch (error) {
-        // console.error("Failed to fetch orders:", error);
-        if (!cached) setIsLoading(false);
-      }
-    };
+  useEffect(() => {
+    if (!session?.user) return;
+    fetchOrders(activeStatus, page);
+  }, [session?.user, fetchOrders, activeStatus, page]);
 
-    run();
-  }, [session?.user?.id]); // ✅ Stable string — only re-runs on actual user change
+  const handleStatusChange = (status: string) => {
+    setActiveStatus(status);
+    setPage(1);
+  };
 
-  // Show spinner only while auth session is being checked
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   if (isPending) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
@@ -115,7 +112,6 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      {/* Page Header */}
       <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
@@ -124,43 +120,64 @@ export default function OrdersPage() {
           <p className="text-zinc-500 dark:text-zinc-400 mt-1">
             {isLoading
               ? "Loading orders..."
-              : `${orders.length} order${orders.length !== 1 ? "s" : ""}`}
+              : `${meta?.total ?? orders.length} order${(meta?.total ?? orders.length) !== 1 ? "s" : ""}`}
           </p>
+        </div>
+
+        {/* Status filter tabs */}
+        <div className="container mx-auto px-4">
+          <div className="flex gap-1 overflow-x-auto pb-0 scrollbar-none">
+            {STATUS_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => handleStatusChange(tab.value)}
+                className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  activeStatus === tab.value
+                    ? "border-orange-500 text-orange-600 dark:text-orange-400"
+                    : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Loading State — only shown on very first visit (no cache yet) */}
-        {isLoading && <OrdersListSkeleton />}
-
-        {/* Empty State */}
-        {!isLoading && orders.length === 0 && (
+        {isLoading ? (
+          <OrdersListSkeleton />
+        ) : orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-20 h-20 rounded-full bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center mb-6">
               <ShoppingBag className="w-8 h-8 text-orange-400" />
             </div>
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">
-              No orders yet
+              {activeStatus
+                ? `No ${activeStatus.toLowerCase()} orders`
+                : "No orders yet"}
             </h2>
             <p className="text-zinc-500 dark:text-zinc-400 mb-8 max-w-sm">
-              Looks like you haven&apos;t placed any orders yet. Browse our
-              meals to get started!
+              {activeStatus
+                ? "Try selecting a different status filter."
+                : "Browse our meals to get started!"}
             </p>
-            <Button
-              asChild
-              className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
-            >
-              <Link href="/meals">Browse Meals</Link>
-            </Button>
+            {!activeStatus && (
+              <Button
+                asChild
+                className="rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
+              >
+                <Link href="/meals">Browse Meals</Link>
+              </Button>
+            )}
           </div>
-        )}
-
-        {/* Orders List */}
-        {!isLoading && orders.length > 0 && (
+        ) : (
           <div className="space-y-4 max-w-3xl mx-auto">
             {orders.map((order) => (
               <OrderCard key={order.id} order={order} />
             ))}
+
+            {meta && <Pagination meta={meta} onPageChange={handlePageChange} />}
           </div>
         )}
       </div>
