@@ -3,7 +3,17 @@
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useSyncExternalStore } from "react";
+
+// useSyncExternalStore is the correct pattern for client-only rendering
+// It returns false on server, true on client — no setState needed
+function useIsMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true, // client snapshot
+    () => false, // server snapshot
+  );
+}
 
 export default function AuthLayout({
   children,
@@ -12,6 +22,7 @@ export default function AuthLayout({
 }) {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const isMounted = useIsMounted();
 
   useEffect(() => {
     if (!isPending && session?.user) {
@@ -26,8 +37,7 @@ export default function AuthLayout({
     }
   }, [session, isPending, router]);
 
-  // Show nothing while checking session — prevents flash of login page
-  if (isPending || session?.user) {
+  if (!isMounted || isPending || session?.user) {
     return (
       <div className="min-h-screen bg-[#0b0c10] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
@@ -49,7 +59,7 @@ export default function AuthLayout({
         </Link>
       </nav>
 
-      <main className="grow flex flex-col items-center justify-start pt-12 px-6">
+      <main className="grow flex flex-col items-center justify-start pt-8 px-6">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-5xl font-extrabold text-white uppercase tracking-tighter mb-3">
             Welcome to <span className="text-orange-500">FOOD</span>HUB
@@ -59,7 +69,7 @@ export default function AuthLayout({
           </p>
         </div>
 
-        <div className="w-full max-w-125 bg-zinc-900/40 backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl">
+        <div className="w-full max-w-2xl bg-zinc-900/40 backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl">
           {children}
         </div>
       </main>

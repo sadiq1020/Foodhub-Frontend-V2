@@ -5,6 +5,7 @@ import {
   Package,
   Settings,
   ShoppingBag,
+  Store,
   UserCog,
   Users,
 } from "lucide-react";
@@ -22,6 +23,11 @@ type AdminStats = {
   totalProviders: number;
   totalOrders: number;
   totalCategories: number;
+  providers: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
 };
 
 export default function AdminDashboard() {
@@ -134,6 +140,15 @@ export default function AdminDashboard() {
             value={stats?.totalCategories || 0}
             isLoading={isLoading}
           />
+          <StatCard
+            icon={Store}
+            iconColor="text-yellow-600 dark:text-yellow-400"
+            iconBgColor="bg-yellow-100 dark:bg-yellow-950/50"
+            label="Pending Providers"
+            value={stats?.providers?.pending || 0}
+            subtext={`${stats?.providers?.approved || 0} approved • ${stats?.providers?.rejected || 0} rejected`}
+            isLoading={isLoading}
+          />
         </div>
 
         {/* Quick Actions */}
@@ -169,6 +184,16 @@ export default function AdminDashboard() {
             title="Manage Categories"
             description="Add, edit, or remove meal categories"
             buttonText="View Categories"
+          />
+          <QuickActionCard
+            href="/admin/providers"
+            icon={Store}
+            iconColor="text-yellow-500"
+            iconBgColor="bg-yellow-100 dark:bg-yellow-950/50"
+            hoverBorderColor="hover:border-yellow-300 dark:hover:border-yellow-700"
+            title="Manage Providers"
+            description={`Review provider applications — ${stats?.providers?.pending || 0} pending approval`}
+            buttonText="View Providers"
           />
         </div>
       </div>
