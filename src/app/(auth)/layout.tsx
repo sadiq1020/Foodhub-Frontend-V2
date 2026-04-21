@@ -26,7 +26,12 @@ export default function AuthLayout({
 
   useEffect(() => {
     if (!isPending && session?.user) {
-      const role = (session.user as { role?: string })?.role;
+      const user = session.user as { role?: string; emailVerified?: boolean };
+
+      // Only redirect verified users away from auth pages
+      if (!user.emailVerified) return;
+
+      const role = user.role;
       if (role === "ADMIN") {
         router.replace("/admin/dashboard");
       } else if (role === "PROVIDER") {
@@ -37,7 +42,12 @@ export default function AuthLayout({
     }
   }, [session, isPending, router]);
 
-  if (!isMounted || isPending || session?.user) {
+  const user = session?.user as
+    | { role?: string; emailVerified?: boolean }
+    | undefined;
+  const isVerifiedUser = !!user && user.emailVerified === true;
+
+  if (!isMounted || isPending || isVerifiedUser) {
     return (
       <div className="min-h-screen bg-[#0b0c10] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />

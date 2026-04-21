@@ -61,7 +61,7 @@ export default function ProviderMenuPage() {
         const data = await api.get("/meals/my-meals");
         setMeals(data.data || data);
       } catch (error) {
-        // console.error("Failed to fetch meals:", error);
+        console.error("Failed to fetch meals:", error);
         toast.error("Failed to load meals");
       } finally {
         setIsLoading(false);

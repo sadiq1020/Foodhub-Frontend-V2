@@ -17,6 +17,7 @@
 
 // export const { signIn, signUp, signOut, useSession } = authClient;
 
+import { emailOTPClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 // /api/auth/* is proxied to the backend via next.config.ts rewrites
@@ -26,6 +27,7 @@ export const authClient = createAuthClient({
   fetchOptions: {
     credentials: "include",
   },
+  plugins: [emailOTPClient()],
 });
 
 export const { signIn, signUp, signOut, useSession } = authClient;

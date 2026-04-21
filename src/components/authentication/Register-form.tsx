@@ -32,6 +32,7 @@ import {
 import { api } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { handleApiError } from "@/lib/handle-error";
+import { useState } from "react";
 import { Button } from "../ui/button";
 
 // Zod Schema for validation
@@ -93,6 +94,11 @@ type RegisterFormData = z.infer<typeof formSchema>;
 export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
 
+  const [verificationStep, setVerificationStep] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -149,12 +155,102 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
       toast.success("Account created successfully! Please log in.", {
         id: toastId,
       });
-      router.push("/login");
+      // router.push("/login");
+      setRegisteredEmail(data.email);
+      setVerificationStep(true);
     } catch (err) {
       // toast.error("Something went wrong, please try again", { id: toastId });
       handleApiError(err, toastId);
     }
   };
+
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) {
+      toast.error("Please enter the 6-digit code");
+      return;
+    }
+
+    const toastId = toast.loading("Verifying...");
+    setIsVerifying(true);
+
+    try {
+      const { error } = await authClient.emailOtp.verifyEmail({
+        email: registeredEmail,
+        otp,
+      });
+
+      if (error) {
+        toast.error(error.message || "Invalid or expired code", {
+          id: toastId,
+        });
+        return;
+      }
+
+      toast.success("Email verified! You can now log in.", { id: toastId });
+      router.push("/login");
+    } catch {
+      toast.error("Verification failed. Please try again.", { id: toastId });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  // Show OTP verification screen after registration
+  if (verificationStep) {
+    return (
+      <Card {...props}>
+        <CardHeader>
+          <CardTitle>Verify your email</CardTitle>
+          <CardDescription>
+            We sent a 6-digit code to{" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-50">
+              {registeredEmail}
+            </span>
+            . Enter it below to activate your account.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="otp">Verification Code</FieldLabel>
+              <Input
+                id="otp"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="123456"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                className="text-center text-2xl tracking-widest font-bold"
+              />
+              <FieldDescription>
+                Check your inbox — the code expires in 10 minutes
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
+        </CardContent>
+
+        <CardFooter className="flex flex-col gap-3">
+          <Button
+            onClick={handleVerifyOtp}
+            disabled={isVerifying || otp.length !== 6}
+            className="w-full rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white"
+          >
+            {isVerifying ? "Verifying..." : "Verify Email"}
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => setVerificationStep(false)}
+            className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors"
+          >
+            ← Use a different email
+          </button>
+        </CardFooter>
+      </Card>
+    );
+  }
 
   return (
     <Card {...props}>
