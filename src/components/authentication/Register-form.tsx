@@ -94,10 +94,23 @@ type RegisterFormData = z.infer<typeof formSchema>;
 export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
 
-  const [verificationStep, setVerificationStep] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState("");
+  // const [verificationStep, setVerificationStep] = useState(false);
+  // const [registeredEmail, setRegisteredEmail] = useState("");
+  const [verificationStep, setVerificationStep] = useState(() => {
+    return !!sessionStorage.getItem("pendingVerificationEmail");
+  });
+  const [registeredEmail, setRegisteredEmail] = useState(() => {
+    return sessionStorage.getItem("pendingVerificationEmail") || "";
+  });
   const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // const [pendingProviderData, setPendingProviderData] = useState<{
+  //   businessName?: string;
+  //   address?: string;
+  //   description?: string;
+  //   userId: string;
+  // } | null>(null);
 
   const {
     register,
@@ -141,18 +154,31 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
         return;
       }
 
-      // Step 2: If Provider, create provider profile
+      // Step 2: If Provider, save profile data for after verification
+      // if (data.role === "PROVIDER" && authData?.user) {
+      //   setPendingProviderData({
+      //     businessName: data.businessName,
+      //     address: data.address,
+      //     description: data.description || "",
+      //     userId: authData.user.id,
+      //   });
+      // }
+      // Step 2: If Provider, save profile data for after verification
       if (data.role === "PROVIDER" && authData?.user) {
-        await api.post("/provider/profile", {
-          businessName: data.businessName,
-          address: data.address,
-          description: data.description || "",
-          userId: authData.user.id,
-        });
+        sessionStorage.setItem(
+          "pendingProviderData",
+          JSON.stringify({
+            businessName: data.businessName,
+            address: data.address,
+            description: data.description || "",
+            userId: authData.user.id,
+          }),
+        );
       }
 
       // Step 3: Success!
       toast.dismiss(toastId);
+      sessionStorage.setItem("pendingVerificationEmail", data.email);
       setRegisteredEmail(data.email);
       setVerificationStep(true);
       toast.success("Check your email for a 6-digit verification code.");
@@ -184,8 +210,21 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
         return;
       }
 
+      // Create provider profile now that email is verified
+      // if (pendingProviderData) {
+      //   await api.post("/provider/profile", pendingProviderData);
+      // }
+
+      // Create provider profile now that email is verified
+      const raw = sessionStorage.getItem("pendingProviderData");
+      if (raw) {
+        await api.post("/provider/profile", JSON.parse(raw));
+        sessionStorage.removeItem("pendingProviderData");
+      }
+
       toast.success("Email verified! You can now log in.", { id: toastId });
       router.push("/login");
+      sessionStorage.removeItem("pendingVerificationEmail");
     } catch {
       toast.error("Verification failed. Please try again.", { id: toastId });
     } finally {
@@ -240,7 +279,15 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
 
           <button
             type="button"
-            onClick={() => setVerificationStep(false)}
+            // onClick={() => {
+            //   sessionStorage.removeItem("pendingVerificationEmail");
+            //   setVerificationStep(false);
+            // }}
+            onClick={() => {
+              sessionStorage.removeItem("pendingVerificationEmail");
+              sessionStorage.removeItem("pendingProviderData");
+              setVerificationStep(false);
+            }}
             className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors"
           >
             ← Use a different email

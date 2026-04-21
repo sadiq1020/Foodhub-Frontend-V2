@@ -291,7 +291,7 @@ const Navbar = ({ className }: { className?: string }) => {
                 </SheetTrigger>
                 <SheetContent className="overflow-y-auto">
                   <SheetHeader>
-                    <SheetTitle>
+                    <SheetTitle asChild>
                       <Link href="/" className="flex items-center gap-2">
                         <Image
                           src={logo}
@@ -371,7 +371,7 @@ const Navbar = ({ className }: { className?: string }) => {
                                 <Link href="/profile">Profile</Link>
                               </Button>
                               <Button asChild variant="outline">
-                                <Link href="/favourites">My Favourites</Link>{" "}
+                                <Link href="/favourites">My Favourites</Link>
                                 {/* ← add this */}
                               </Button>
                               <Button asChild variant="outline">
