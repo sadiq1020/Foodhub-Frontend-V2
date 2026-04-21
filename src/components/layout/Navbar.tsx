@@ -123,6 +123,9 @@ const Navbar = ({ className }: { className?: string }) => {
           <Link href="/profile">Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
+          <Link href="/favourites">My Favourites</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link href="/orders">My Orders</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -366,6 +369,10 @@ const Navbar = ({ className }: { className?: string }) => {
                             <>
                               <Button asChild variant="outline">
                                 <Link href="/profile">Profile</Link>
+                              </Button>
+                              <Button asChild variant="outline">
+                                <Link href="/favourites">My Favourites</Link>{" "}
+                                {/* ← add this */}
                               </Button>
                               <Button asChild variant="outline">
                                 <Link href="/orders">My Orders</Link>

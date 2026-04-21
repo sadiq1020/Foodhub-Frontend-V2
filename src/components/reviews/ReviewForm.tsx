@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Star } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -24,6 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 import { handleApiError } from "@/lib/handle-error";
+import type { Review } from "@/types";
 
 const reviewSchema = z.object({
   rating: z.number().min(1, "Please select a rating").max(5),
@@ -37,7 +38,9 @@ interface ReviewFormProps {
   onOpenChange: (open: boolean) => void;
   mealId: string;
   mealName: string;
-  onSuccess: (mealId: string) => void; // ✅ Pass mealId back so caller can navigate to meal page
+  onSuccess: (mealId: string) => void;
+  // Optional — when provided, form is in edit mode
+  review?: Review | null;
 }
 
 export function ReviewForm({
@@ -46,8 +49,10 @@ export function ReviewForm({
   mealId,
   mealName,
   onSuccess,
+  review,
 }: ReviewFormProps) {
   const [hoveredStar, setHoveredStar] = useState(0);
+  const isEditMode = !!review;
 
   const {
     register,
@@ -58,32 +63,49 @@ export function ReviewForm({
     reset,
   } = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema),
-    defaultValues: {
-      rating: 0,
-      comment: "",
-    },
+    defaultValues: { rating: 0, comment: "" },
   });
 
   const rating = watch("rating");
 
+  // Pre-fill when editing
+  useEffect(() => {
+    if (open && review) {
+      reset({ rating: review.rating, comment: review.comment || "" });
+    } else if (open && !review) {
+      reset({ rating: 0, comment: "" });
+    }
+  }, [open, review, reset]);
+
   const onSubmit = async (data: ReviewFormData) => {
-    const toastId = toast.loading("Submitting review...");
+    const toastId = toast.loading(
+      isEditMode ? "Updating review..." : "Submitting review...",
+    );
 
     try {
-      await api.post("/reviews", {
-        mealId,
-        rating: data.rating,
-        comment: data.comment || undefined,
-      });
+      if (isEditMode && review) {
+        await api.put(`/reviews/${review.id}`, {
+          rating: data.rating,
+          comment: data.comment || undefined,
+        });
+      } else {
+        await api.post("/reviews", {
+          mealId,
+          rating: data.rating,
+          comment: data.comment || undefined,
+        });
+      }
 
-      toast.success("Review submitted successfully!", { id: toastId });
+      toast.success(
+        isEditMode
+          ? "Review updated successfully!"
+          : "Review submitted successfully!",
+        { id: toastId },
+      );
       reset();
-      onSuccess(mealId); // ✅ Pass mealId so caller can navigate to the meal page
+      onSuccess(mealId);
       onOpenChange(false);
-    } catch (error: unknown) {
-      // const message =
-      //   error instanceof Error ? error.message : "Failed to submit review";
-      // toast.error(message, { id: toastId });
+    } catch (error) {
       handleApiError(error, toastId);
     }
   };
@@ -92,15 +114,18 @@ export function ReviewForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Write a Review</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Edit Review" : "Write a Review"}
+          </DialogTitle>
           <DialogDescription>
-            Share your experience with {mealName}
+            {isEditMode
+              ? `Update your review for ${mealName}`
+              : `Share your experience with ${mealName}`}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <FieldGroup>
-            {/* Star Rating */}
             <Field data-invalid={!!errors.rating}>
               <FieldLabel>Rating *</FieldLabel>
               <div className="flex gap-2 py-2">
@@ -126,7 +151,6 @@ export function ReviewForm({
               {errors.rating && <FieldError errors={[errors.rating]} />}
             </Field>
 
-            {/* Comment */}
             <Field data-invalid={!!errors.comment}>
               <FieldLabel htmlFor="comment">Comment (Optional)</FieldLabel>
               <Textarea
@@ -139,7 +163,6 @@ export function ReviewForm({
             </Field>
           </FieldGroup>
 
-          {/* Actions */}
           <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"
@@ -154,7 +177,13 @@ export function ReviewForm({
               disabled={isSubmitting}
               className="rounded-full bg-orange-500 hover:bg-orange-600 text-white px-8"
             >
-              {isSubmitting ? "Submitting..." : "Submit Review"}
+              {isSubmitting
+                ? isEditMode
+                  ? "Updating..."
+                  : "Submitting..."
+                : isEditMode
+                  ? "Update Review"
+                  : "Submit Review"}
             </Button>
           </div>
         </form>

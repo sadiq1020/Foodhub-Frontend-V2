@@ -64,6 +64,7 @@ export type Review = {
   customer: {
     name: string;
   };
+  customerId: string;
   createdAt: string;
 };
 

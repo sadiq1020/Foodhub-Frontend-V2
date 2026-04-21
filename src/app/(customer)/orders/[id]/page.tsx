@@ -45,6 +45,7 @@ export default function OrderDetailPage({
     id: string;
     name: string;
   } | null>(null);
+  const [reviewedMealIds, setReviewedMealIds] = useState<string[]>([]);
 
   const searchParams = useSearchParams();
   const paymentToastShown = useRef(false);
@@ -86,9 +87,36 @@ export default function OrderDetailPage({
       try {
         setIsLoading(true);
         const data = await api.get(`/orders/${id}`);
-        setOrder(data.data || data);
-      } catch (error) {
-        console.error("Failed to fetch order:", error);
+        const fetchedOrder: Order = data.data || data;
+        setOrder(fetchedOrder);
+
+        // Check which meals from this order have already been reviewed
+        // by fetching each meal's reviews and checking if this customer reviewed it
+        if (fetchedOrder.status === "DELIVERED" && fetchedOrder.items) {
+          const mealIds = fetchedOrder.items.map((item) => item.meal.id);
+          const reviewChecks = await Promise.all(
+            mealIds.map(async (mealId) => {
+              try {
+                // GET /favourites/:mealId/check pattern — use reviews check endpoint
+                // Since we don't have a dedicated endpoint, check via meal detail
+                const mealData = await api.get(`/meals/${mealId}`);
+                const meal = mealData.data || mealData;
+                const reviews = meal.reviews || [];
+                const hasReviewed = reviews.some(
+                  (r: { customerId?: string; customer?: { id?: string } }) =>
+                    r.customerId === session.user!.id,
+                );
+                return hasReviewed ? mealId : null;
+              } catch {
+                return null;
+              }
+            }),
+          );
+          setReviewedMealIds(
+            reviewChecks.filter((id): id is string => id !== null),
+          );
+        }
+      } catch {
         toast.error("Order not found");
         router.push("/orders");
       } finally {
@@ -123,8 +151,8 @@ export default function OrderDetailPage({
 
   const handleReviewSuccess = (mealId: string) => {
     toast.success("Thank you for your review!");
-    // ✅ Navigate to the meal page so the customer can see their review immediately.
-    // The meal detail page uses cache: 'no-store' so it will always show fresh data.
+    // Add to reviewed list immediately so button changes to "Reviewed" badge
+    setReviewedMealIds((prev) => [...prev, mealId]);
     router.push(`/meals/${mealId}`);
   };
 
@@ -247,6 +275,7 @@ export default function OrderDetailPage({
               <OrderItemsList
                 items={order.items}
                 canReview={canReview}
+                reviewedMealIds={reviewedMealIds}
                 onReviewClick={(mealId: string, mealName: string) => {
                   setSelectedMeal({ id: mealId, name: mealName });
                   setReviewDialogOpen(true);

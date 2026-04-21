@@ -1,9 +1,10 @@
 "use client";
 
+import { FavouriteButton } from "@/components/meals/FavouriteButton"; // ← add
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
-import { useSession } from "@/lib/auth-client"; // ← Add
+import { useSession } from "@/lib/auth-client";
 import type { Meal } from "@/types";
 import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
@@ -13,7 +14,7 @@ import { toast } from "sonner";
 export function MealCard({ meal }: { meal: Meal }) {
   const router = useRouter();
   const { addToCart } = useCart();
-  const { data: session } = useSession(); // ← Add
+  const { data: session } = useSession();
 
   const getDietaryColor = (dietary: string | null | undefined) => {
     if (!dietary || typeof dietary !== "string")
@@ -30,7 +31,6 @@ export function MealCard({ meal }: { meal: Meal }) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    //  Check if logged in
     if (!session?.user) {
       toast.error("Please login to add items to cart", {
         action: {
@@ -102,6 +102,11 @@ export function MealCard({ meal }: { meal: Meal }) {
             </span>
           </div>
         )}
+
+        {/* ← Bookmark button — top right of image */}
+        <div className="absolute top-2 right-2">
+          <FavouriteButton mealId={meal.id} size="sm" />
+        </div>
       </div>
 
       <div className="p-4 space-y-2">
@@ -133,7 +138,6 @@ export function MealCard({ meal }: { meal: Meal }) {
               className="h-8 rounded-full bg-orange-500 hover:bg-orange-600 text-white border-0 gap-1.5 text-xs px-3"
             >
               <ShoppingCart className="w-3 h-3" />
-              {/*  Show different text based on login status */}
               <span suppressHydrationWarning>Add to Cart</span>
             </Button>
           )}
