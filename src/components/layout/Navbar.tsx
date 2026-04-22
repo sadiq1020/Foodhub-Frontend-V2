@@ -372,7 +372,6 @@ const Navbar = ({ className }: { className?: string }) => {
                               </Button>
                               <Button asChild variant="outline">
                                 <Link href="/favourites">My Favourites</Link>
-                                {/* ← add this */}
                               </Button>
                               <Button asChild variant="outline">
                                 <Link href="/orders">My Orders</Link>
