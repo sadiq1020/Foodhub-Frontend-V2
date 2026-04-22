@@ -63,16 +63,41 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   //     setIsGoogleLoading(false);
   //   }
   // };
-  const handleGoogleLogin = () => {
-    const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      "https://foodhub-backend-v2.onrender.com";
-    const frontendUrl =
-      process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin;
 
-    // Redirect directly to backend OAuth — bypasses Next.js proxy
-    // which causes state cookie mismatch on cross-domain setups
-    window.location.href = `${backendUrl}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(frontendUrl + "/")}`;
+  // bug fix attempt 1
+  // const handleGoogleLogin = () => {
+  //   const backendUrl =
+  //     process.env.NEXT_PUBLIC_API_URL ||
+  //     "https://foodhub-backend-v2.onrender.com";
+  //   const frontendUrl =
+  //     process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin;
+
+  //   // Redirect directly to backend OAuth — bypasses Next.js proxy
+  //   // which causes state cookie mismatch on cross-domain setups
+  //   window.location.href = `${backendUrl}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(frontendUrl + "/")}`;
+  // };
+
+  // bug fix attempt 2
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      // For Google OAuth, we must hit the backend directly — not through the
+      // Next.js proxy — because the state cookie must be set and read on the
+      // same domain (onrender.com). Going through the proxy breaks this.
+      const { createAuthClient } = await import("better-auth/react");
+      const directClient = createAuthClient({
+        baseURL: "https://foodhub-backend-v2.onrender.com",
+        fetchOptions: { credentials: "include" },
+      });
+
+      await directClient.signIn.social({
+        provider: "google",
+        callbackURL: `${process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin}/`,
+      });
+    } catch {
+      toast.error("Google login failed. Please try again.");
+      setIsGoogleLoading(false);
+    }
   };
 
   const onSubmit = async (data: LoginFormData) => {
