@@ -48,21 +48,21 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   });
 
   // Google login handler
-  // const handleGoogleLogin = async () => {
-  //   setIsGoogleLoading(true);
-  //   try {
-  //     await authClient.signIn.social({
-  //       provider: "google",
-  //       // After Google auth, Better Auth redirects here on the backend,
-  //       // which then redirects to the frontend home
-  //       callbackURL: `${window.location.origin}/`,
-  //     });
-  //     // Note: no code after this — the browser will redirect away
-  //   } catch {
-  //     toast.error("Google login failed. Please try again.");
-  //     setIsGoogleLoading(false);
-  //   }
-  // };
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        // After Google auth, Better Auth redirects here on the backend,
+        // which then redirects to the frontend home
+        callbackURL: `${window.location.origin}/`,
+      });
+      // Note: no code after this — the browser will redirect away
+    } catch {
+      toast.error("Google login failed. Please try again.");
+      setIsGoogleLoading(false);
+    }
+  };
 
   // bug fix attempt 1
   // const handleGoogleLogin = () => {
@@ -78,27 +78,27 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   // };
 
   // bug fix attempt 2
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    try {
-      // For Google OAuth, we must hit the backend directly — not through the
-      // Next.js proxy — because the state cookie must be set and read on the
-      // same domain (onrender.com). Going through the proxy breaks this.
-      const { createAuthClient } = await import("better-auth/react");
-      const directClient = createAuthClient({
-        baseURL: "https://foodhub-backend-v2.onrender.com",
-        fetchOptions: { credentials: "include" },
-      });
+  // const handleGoogleLogin = async () => {
+  //   setIsGoogleLoading(true);
+  //   try {
+  //     // For Google OAuth, we must hit the backend directly — not through the
+  //     // Next.js proxy — because the state cookie must be set and read on the
+  //     // same domain (onrender.com). Going through the proxy breaks this.
+  //     const { createAuthClient } = await import("better-auth/react");
+  //     const directClient = createAuthClient({
+  //       baseURL: "https://foodhub-backend-v2.onrender.com",
+  //       fetchOptions: { credentials: "include" },
+  //     });
 
-      await directClient.signIn.social({
-        provider: "google",
-        callbackURL: `${process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin}/`,
-      });
-    } catch {
-      toast.error("Google login failed. Please try again.");
-      setIsGoogleLoading(false);
-    }
-  };
+  //     await directClient.signIn.social({
+  //       provider: "google",
+  //       callbackURL: `${process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin}/`,
+  //     });
+  //   } catch {
+  //     toast.error("Google login failed. Please try again.");
+  //     setIsGoogleLoading(false);
+  //   }
+  // };
 
   const onSubmit = async (data: LoginFormData) => {
     const toastId = toast.loading("Logging in...");
