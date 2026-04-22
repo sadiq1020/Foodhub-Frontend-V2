@@ -48,20 +48,31 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   });
 
   // Google login handler
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-        // After Google auth, Better Auth redirects here on the backend,
-        // which then redirects to the frontend home
-        callbackURL: `${window.location.origin}/`,
-      });
-      // Note: no code after this — the browser will redirect away
-    } catch {
-      toast.error("Google login failed. Please try again.");
-      setIsGoogleLoading(false);
-    }
+  // const handleGoogleLogin = async () => {
+  //   setIsGoogleLoading(true);
+  //   try {
+  //     await authClient.signIn.social({
+  //       provider: "google",
+  //       // After Google auth, Better Auth redirects here on the backend,
+  //       // which then redirects to the frontend home
+  //       callbackURL: `${window.location.origin}/`,
+  //     });
+  //     // Note: no code after this — the browser will redirect away
+  //   } catch {
+  //     toast.error("Google login failed. Please try again.");
+  //     setIsGoogleLoading(false);
+  //   }
+  // };
+  const handleGoogleLogin = () => {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      "https://foodhub-backend-v2.onrender.com";
+    const frontendUrl =
+      process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin;
+
+    // Redirect directly to backend OAuth — bypasses Next.js proxy
+    // which causes state cookie mismatch on cross-domain setups
+    window.location.href = `${backendUrl}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(frontendUrl + "/")}`;
   };
 
   const onSubmit = async (data: LoginFormData) => {
