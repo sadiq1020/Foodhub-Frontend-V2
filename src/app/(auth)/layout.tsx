@@ -24,12 +24,32 @@ export default function AuthLayout({
   const router = useRouter();
   const isMounted = useIsMounted();
 
+  // useEffect(() => {
+  //   if (!isPending && session?.user) {
+  //     const user = session.user as { role?: string; emailVerified?: boolean };
+
+  //     // Only redirect verified users away from auth pages
+  //     if (!user.emailVerified) return;
+
+  //     const role = user.role;
+  //     if (role === "ADMIN") {
+  //       router.replace("/admin/dashboard");
+  //     } else if (role === "PROVIDER") {
+  //       router.replace("/provider/dashboard");
+  //     } else {
+  //       router.replace("/");
+  //     }
+  //   }
+  // }, [session, isPending, router]);
+
   useEffect(() => {
     if (!isPending && session?.user) {
       const user = session.user as { role?: string; emailVerified?: boolean };
-
-      // Only redirect verified users away from auth pages
       if (!user.emailVerified) return;
+
+      // Don't redirect if an OAuth flow is in progress
+      const hasOAuthState = document.cookie.includes("better-auth.state");
+      if (hasOAuthState) return;
 
       const role = user.role;
       if (role === "ADMIN") {
@@ -41,13 +61,16 @@ export default function AuthLayout({
       }
     }
   }, [session, isPending, router]);
-
   const user = session?.user as
     | { role?: string; emailVerified?: boolean }
     | undefined;
   const isVerifiedUser = !!user && user.emailVerified === true;
 
-  if (!isMounted || isPending || isVerifiedUser) {
+  const hasOAuthState =
+    typeof document !== "undefined" &&
+    document.cookie.includes("better-auth.state");
+
+  if (!isMounted || (isPending && !hasOAuthState) || isVerifiedUser) {
     return (
       <div className="min-h-screen bg-[#0b0c10] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
