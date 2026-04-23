@@ -1,17 +1,10 @@
-// import { auth } from "@/lib/auth";
-// import { toNextJsHandler } from "better-auth/next-js";
-
-// export const { POST, GET } = toNextJsHandler(auth);
-
-// export {};
-
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL =
   process.env.BACKEND_URL || "https://foodhub-backend-v2.onrender.com";
 
 async function handler(request: NextRequest) {
-  const path = request.nextUrl.pathname.replace("/api/auth", "/api/auth");
+  const path = request.nextUrl.pathname;
   const search = request.nextUrl.search;
   const url = `${BACKEND_URL}${path}${search}`;
 
@@ -31,15 +24,34 @@ async function handler(request: NextRequest) {
     method: request.method,
     headers,
     body,
-    redirect: "manual", // don't follow redirects — let the browser handle them
+    redirect: "manual",
   });
 
-  const response = new NextResponse(res.body, {
+  // Copy response headers, but rewrite Set-Cookie to remove the Domain
+  // attribute — otherwise the browser assigns cookies to onrender.com
+  // instead of vercel.app
+  const responseHeaders = new Headers();
+  res.headers.forEach((value, key) => {
+    if (key.toLowerCase() === "set-cookie") {
+      // Strip Domain=...; so the cookie is scoped to the current host (vercel.app)
+      const rewritten = value
+        .split(";")
+        .filter((part) => !part.trim().toLowerCase().startsWith("domain="))
+        .join(";");
+      responseHeaders.append("set-cookie", rewritten);
+    } else if (key.toLowerCase() === "location") {
+      // If backend redirects to its own domain, rewrite to frontend
+      const rewritten = value.replace(BACKEND_URL, "");
+      responseHeaders.set("location", rewritten || "/");
+    } else {
+      responseHeaders.set(key, value);
+    }
+  });
+
+  return new NextResponse(res.body, {
     status: res.status,
-    headers: res.headers,
+    headers: responseHeaders,
   });
-
-  return response;
 }
 
 export const GET = handler;
