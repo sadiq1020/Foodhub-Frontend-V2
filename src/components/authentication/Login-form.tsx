@@ -101,6 +101,31 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   // };
 
   // bug fix attempt 3
+  // const handleGoogleLogin = async () => {
+  //   setIsGoogleLoading(true);
+  //   try {
+  //     const result = await authClient.signIn.social({
+  //       provider: "google",
+  //       callbackURL: `${window.location.origin}/`,
+  //       disableRedirect: true,
+  //     });
+
+  //     console.log("Google signIn result:", JSON.stringify(result));
+
+  //     if (result?.data?.url) {
+  //       window.location.href = result.data.url;
+  //     } else {
+  //       toast.error("No redirect URL returned");
+  //       setIsGoogleLoading(false);
+  //     }
+  //   } catch (err) {
+  //     console.error("Google signIn error:", err);
+  //     toast.error("Google login failed. Please try again.");
+  //     setIsGoogleLoading(false);
+  //   }
+  // };
+
+  // bug fix attempt 4
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     try {
@@ -110,12 +135,14 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
         disableRedirect: true,
       });
 
-      console.log("Google signIn result:", JSON.stringify(result));
-
       if (result?.data?.url) {
-        window.location.href = result.data.url;
+        // Use replace to prevent back-button issues
+        // setTimeout ensures this fires outside React's render cycle
+        setTimeout(() => {
+          window.location.replace(result.data.url);
+        }, 50);
       } else {
-        toast.error("No redirect URL returned");
+        toast.error("Could not get Google login URL. Please try again.");
         setIsGoogleLoading(false);
       }
     } catch (err) {
