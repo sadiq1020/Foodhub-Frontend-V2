@@ -48,21 +48,21 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   });
 
   // Google login handler
-  const handleGoogleLogin = async () => {
-    setIsGoogleLoading(true);
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-        // After Google auth, Better Auth redirects here on the backend,
-        // which then redirects to the frontend home
-        callbackURL: `${window.location.origin}/`,
-      });
-      // Note: no code after this — the browser will redirect away
-    } catch {
-      toast.error("Google login failed. Please try again.");
-      setIsGoogleLoading(false);
-    }
-  };
+  // const handleGoogleLogin = async () => {
+  //   setIsGoogleLoading(true);
+  //   try {
+  //     await authClient.signIn.social({
+  //       provider: "google",
+  //       // After Google auth, Better Auth redirects here on the backend,
+  //       // which then redirects to the frontend home
+  //       callbackURL: `${window.location.origin}/`,
+  //     });
+  //     // Note: no code after this — the browser will redirect away
+  //   } catch {
+  //     toast.error("Google login failed. Please try again.");
+  //     setIsGoogleLoading(false);
+  //   }
+  // };
 
   // bug fix attempt 1
   // const handleGoogleLogin = () => {
@@ -99,6 +99,29 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   //     setIsGoogleLoading(false);
   //   }
   // };
+
+  // bug fix attempt 3
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const data = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/`,
+        disableRedirect: true,
+      });
+
+      // Manually redirect to the Google OAuth URL
+      if (data?.data?.url) {
+        window.location.href = data.data.url;
+      } else {
+        toast.error("Could not get Google login URL. Please try again.");
+        setIsGoogleLoading(false);
+      }
+    } catch {
+      toast.error("Google login failed. Please try again.");
+      setIsGoogleLoading(false);
+    }
+  };
 
   const onSubmit = async (data: LoginFormData) => {
     const toastId = toast.loading("Logging in...");
