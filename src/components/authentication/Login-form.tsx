@@ -104,20 +104,22 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     try {
-      const data = await authClient.signIn.social({
+      const result = await authClient.signIn.social({
         provider: "google",
         callbackURL: `${window.location.origin}/`,
         disableRedirect: true,
       });
 
-      // Manually redirect to the Google OAuth URL
-      if (data?.data?.url) {
-        window.location.href = data.data.url;
+      console.log("Google signIn result:", JSON.stringify(result));
+
+      if (result?.data?.url) {
+        window.location.href = result.data.url;
       } else {
-        toast.error("Could not get Google login URL. Please try again.");
+        toast.error("No redirect URL returned");
         setIsGoogleLoading(false);
       }
-    } catch {
+    } catch (err) {
+      console.error("Google signIn error:", err);
       toast.error("Google login failed. Please try again.");
       setIsGoogleLoading(false);
     }
