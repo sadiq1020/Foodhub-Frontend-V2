@@ -151,27 +151,19 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   //   }
   // };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     setIsGoogleLoading(true);
-    try {
-      const result = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: `${window.location.origin}/`,
-        disableRedirect: true,
-      });
 
-      if (result?.data?.url) {
-        window.location.href = result.data.url;
-        return;
-      }
+    const backendUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      "https://foodhub-backend-v2.onrender.com";
 
-      toast.error("Could not get Google login URL. Please try again.");
-      setIsGoogleLoading(false);
-    } catch (err) {
-      console.error("Google signIn error:", err);
-      toast.error("Google login failed. Please try again.");
-      setIsGoogleLoading(false);
-    }
+    const callbackURL = `${window.location.origin}/`;
+    const redirectUrl = `${backendUrl}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(
+      callbackURL,
+    )}`;
+
+    window.location.href = redirectUrl;
   };
 
   const onSubmit = async (data: LoginFormData) => {
