@@ -151,39 +151,22 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   //   }
   // };
 
-  // bug fix attempt 5
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     try {
-      // For OAuth, we MUST hit the backend directly — not via the Next.js proxy.
-      // The state cookie needs to be set and read on the same domain (onrender.com).
-      // Going through the Vercel proxy breaks this because the cookie lands on
-      // vercel.app but the callback goes to onrender.com which can't read it.
-      const backendUrl =
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://foodhub-backend-v2.onrender.com";
-
-      const frontendUrl =
-        process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin;
-
-      const response = await fetch(`${backendUrl}/api/auth/sign-in/social`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          provider: "google",
-          callbackURL: `${frontendUrl}/`,
-        }),
-        credentials: "include", // ← this tells browser to store the state cookie on onrender.com
+      const result = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/`,
+        disableRedirect: true,
       });
 
-      const data = await response.json();
-
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        toast.error("Could not get Google login URL. Please try again.");
-        setIsGoogleLoading(false);
+      if (result?.data?.url) {
+        window.location.href = result.data.url;
+        return;
       }
+
+      toast.error("Could not get Google login URL. Please try again.");
+      setIsGoogleLoading(false);
     } catch (err) {
       console.error("Google signIn error:", err);
       toast.error("Google login failed. Please try again.");
