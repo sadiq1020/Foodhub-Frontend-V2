@@ -76,11 +76,12 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
-      // Auth routes → proxied to backend
-      // {
-      //   source: "/api/auth/:path*",
-      //   destination: `${BACKEND_URL}/api/auth/:path*`,
-      // },
+      // ⚠️ REMOVED: /api/auth/:path* is NO LONGER proxied
+      // Reason: Auth client now points DIRECTLY to the backend.
+      // The backend properly sets SameSite: None; Secure cookies,
+      // and the browser can send them via credentials: "include".
+      // Proxying through Vercel breaks Set-Cookie header forwarding.
+
       // All other API calls → proxied to backend
       {
         source: "/api/v1/:path*",
