@@ -19,34 +19,13 @@
 
 // ---------------------------------------------------------------------------
 
-// import { emailOTPClient } from "better-auth/client/plugins";
-// import { createAuthClient } from "better-auth/react";
-
-// // /api/auth/* is proxied to the backend via next.config.ts rewrites
-// // so we point the client at the frontend URL — the proxy does the rest
-// export const authClient = createAuthClient({
-//   baseURL: process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000",
-//   fetchOptions: {
-//     credentials: "include",
-//   },
-//   plugins: [emailOTPClient()],
-// });
-
-// export const { signIn, signUp, signOut, useSession } = authClient;
-
-// ---------------------------------------------------------------------------
 import { emailOTPClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
-// authClient must point DIRECTLY to the backend — not through the Next.js proxy.
-// Reason: the session cookie lives on onrender.com. If we proxy through Vercel,
-// the Vercel server forwards the request but has no cookies — the browser's
-// onrender.com cookies never get sent. Pointing directly to the backend lets
-// the browser send its cookies itself (credentials: "include" + SameSite: None).
+// /api/auth/* is proxied to the backend via next.config.ts rewrites
+// so we point the client at the frontend URL — the proxy does the rest
 export const authClient = createAuthClient({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL ||
-    "https://foodhub-backend-v2.onrender.com",
+  baseURL: process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000",
   fetchOptions: {
     credentials: "include",
   },
@@ -54,3 +33,24 @@ export const authClient = createAuthClient({
 });
 
 export const { signIn, signUp, signOut, useSession } = authClient;
+
+// ---------------------------------------------------------------------------
+// import { emailOTPClient } from "better-auth/client/plugins";
+// import { createAuthClient } from "better-auth/react";
+
+// // authClient must point DIRECTLY to the backend — not through the Next.js proxy.
+// // Reason: the session cookie lives on onrender.com. If we proxy through Vercel,
+// // the Vercel server forwards the request but has no cookies — the browser's
+// // onrender.com cookies never get sent. Pointing directly to the backend lets
+// // the browser send its cookies itself (credentials: "include" + SameSite: None).
+// export const authClient = createAuthClient({
+//   baseURL:
+//     process.env.NEXT_PUBLIC_API_URL ||
+//     "https://foodhub-backend-v2.onrender.com",
+//   fetchOptions: {
+//     credentials: "include",
+//   },
+//   plugins: [emailOTPClient()],
+// });
+
+// export const { signIn, signUp, signOut, useSession } = authClient;
