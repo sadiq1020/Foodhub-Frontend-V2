@@ -22,21 +22,12 @@
 import { emailOTPClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
-// ✅ Point DIRECTLY to the backend — DO NOT proxy through Vercel
-// Reason: Better-auth needs to set cookies on the backend domain.
-// When proxying through Vercel, the Set-Cookie response header from Render
-// doesn't properly translate to the browser — the response appears to come
-// from Vercel, not the Render backend, so cookies get lost.
-//
-// With SameSite: None; Secure configured on the backend (which it is),
-// the browser will accept cookies from the backend domain and send them
-// with credentials: "include" on subsequent requests.
+// /api/auth/* is proxied to the backend via next.config.ts rewrites
+// so we point the client at the frontend URL — the proxy does the rest
 export const authClient = createAuthClient({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL ||
-    "https://foodhub-backend-v2.onrender.com",
+  baseURL: process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000",
   fetchOptions: {
-    credentials: "include", // Send cookies with cross-origin requests
+    credentials: "include",
   },
   plugins: [emailOTPClient()],
 });

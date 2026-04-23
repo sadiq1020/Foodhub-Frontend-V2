@@ -3,17 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 export async function proxy(request: NextRequest) {
   const pathName = request.nextUrl.pathname;
 
+  // Skip middleware for OAuth callback and home page to avoid interfering with auth flow
+  if (pathName === "/" || pathName.startsWith("/api/auth")) {
+    return NextResponse.next();
+  }
+
   let user: { role?: string } | null = null;
 
   try {
-    // const origin = request.nextUrl.origin;
-
-    // const sessionRes = await fetch(`${origin}/api/auth/get-session`, {
-    //   headers: {
-    //     cookie: request.headers.get("cookie") || "",
-    //   },
-    // });
-
     const backendUrl =
       process.env.BACKEND_URL || "https://foodhub-backend-v2.onrender.com";
 

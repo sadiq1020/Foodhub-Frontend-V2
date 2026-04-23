@@ -1,20 +1,28 @@
 "use client";
-import { authClient } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export function SessionRefresher() {
   const router = useRouter();
+  const { data: session, isPending } = useSession();
+  const hasRefreshed = useRef(false);
 
   useEffect(() => {
-    authClient.getSession().then((result) => {
-      if (result?.data?.user) {
-        // Session exists — force Next.js to re-render server components
-        // so Navbar picks up the session
+    // Only refresh once when session becomes available
+    if (!isPending && session?.user && !hasRefreshed.current) {
+      hasRefreshed.current = true;
+      // Small delay to ensure cookie is fully set
+      setTimeout(() => {
         router.refresh();
-      }
-    });
-  }, [router]);
+      }, 100);
+    }
+
+    // Reset flag if session disappears (logout)
+    if (!isPending && !session?.user) {
+      hasRefreshed.current = false;
+    }
+  }, [session, isPending, router]);
 
   return null;
 }
