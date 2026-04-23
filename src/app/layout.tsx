@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { SessionRefresher } from "@/components/SessionRefresher";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import type { Metadata } from "next";
@@ -41,6 +42,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <SessionRefresher />
             <Navbar />
             {children}
             <Toaster />
