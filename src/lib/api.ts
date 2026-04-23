@@ -1,6 +1,10 @@
 import type { ApiError } from "@/types";
 
-const BASE_URL = "/api/v1";
+// const BASE_URL = "/api/v1";
+const BASE_URL =
+  typeof window !== "undefined"
+    ? `${process.env.NEXT_PUBLIC_API_URL || "https://foodhub-backend-v2.onrender.com"}`
+    : "/api/v1"; // server-side can still use the proxy
 
 // Parse the error response from the backend into a structured ApiError
 const parseError = async (res: Response): Promise<ApiError> => {
