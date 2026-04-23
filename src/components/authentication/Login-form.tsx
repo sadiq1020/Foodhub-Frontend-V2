@@ -136,10 +136,9 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
       });
 
       if (result?.data?.url) {
-        // Use replace to prevent back-button issues
-        // setTimeout ensures this fires outside React's render cycle
+        const googleUrl = result.data.url;
         setTimeout(() => {
-          window.location.replace(result.data.url);
+          window.location.replace(googleUrl);
         }, 50);
       } else {
         toast.error("Could not get Google login URL. Please try again.");
