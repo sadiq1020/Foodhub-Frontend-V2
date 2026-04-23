@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -36,7 +35,6 @@ type LoginFormData = z.infer<typeof formSchema>;
 
 export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const {
     register,
@@ -151,19 +149,9 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   //   }
   // };
 
+  // Google login temporarily disabled
   const handleGoogleLogin = () => {
-    setIsGoogleLoading(true);
-
-    const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      "https://foodhub-backend-v2.onrender.com";
-
-    const callbackURL = `${window.location.origin}/`;
-    const redirectUrl = `${backendUrl}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(
-      callbackURL,
-    )}`;
-
-    window.location.href = redirectUrl;
+    toast.info("Google login is temporarily disabled");
   };
 
   const onSubmit = async (data: LoginFormData) => {
@@ -251,13 +239,13 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
           </div>
         </div>
 
-        {/* Google Login Button */}
+        {/* Google Login Button - Temporarily Disabled */}
         <Button
           type="button"
           variant="outline"
-          className="w-full flex items-center gap-2"
+          className="w-full flex items-center gap-2 opacity-50 cursor-not-allowed"
           onClick={handleGoogleLogin}
-          disabled={isGoogleLoading}
+          disabled={true}
         >
           {/* Google SVG icon */}
           <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
@@ -278,9 +266,7 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
               fill="#EA4335"
             />
           </svg>
-          {isGoogleLoading
-            ? "Redirecting to Google..."
-            : "Continue with Google"}
+          Continue with Google (Disabled)
         </Button>
       </CardContent>
 

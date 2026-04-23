@@ -22,13 +22,10 @@
 import { emailOTPClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
-// Point directly to the backend for all auth operations.
-// OAuth state cookies need to be set and read on the backend domain.
-// Proxying auth through Vercel causes state mismatch and login failures.
+// /api/auth/* is proxied to the backend via next.config.ts rewrites
+// so we point the client at the frontend URL — the proxy does the rest
 export const authClient = createAuthClient({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL ||
-    "https://foodhub-backend-v2.onrender.com",
+  baseURL: process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000",
   fetchOptions: {
     credentials: "include",
   },

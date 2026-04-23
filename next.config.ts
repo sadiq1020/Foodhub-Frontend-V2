@@ -76,7 +76,12 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
-      // All API calls except auth → proxied to backend
+      // Auth routes → proxied to backend
+      {
+        source: "/api/auth/:path*",
+        destination: `${BACKEND_URL}/api/auth/:path*`,
+      },
+      // All other API calls → proxied to backend
       {
         source: "/api/v1/:path*",
         destination: `${BACKEND_URL}/:path*`,
