@@ -6,8 +6,18 @@ export async function proxy(request: NextRequest) {
   let user: { role?: string } | null = null;
 
   try {
-    const origin = request.nextUrl.origin;
-    const sessionRes = await fetch(`${origin}/api/auth/get-session`, {
+    // const origin = request.nextUrl.origin;
+
+    // const sessionRes = await fetch(`${origin}/api/auth/get-session`, {
+    //   headers: {
+    //     cookie: request.headers.get("cookie") || "",
+    //   },
+    // });
+
+    const backendUrl =
+      process.env.BACKEND_URL || "https://foodhub-backend-v2.onrender.com";
+
+    const sessionRes = await fetch(`${backendUrl}/api/auth/get-session`, {
       headers: {
         cookie: request.headers.get("cookie") || "",
       },
