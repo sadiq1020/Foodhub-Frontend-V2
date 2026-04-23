@@ -77,10 +77,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       // Auth routes → proxied to backend
-      {
-        source: "/api/auth/:path*",
-        destination: `${BACKEND_URL}/api/auth/:path*`,
-      },
+      // {
+      //   source: "/api/auth/:path*",
+      //   destination: `${BACKEND_URL}/api/auth/:path*`,
+      // },
       // All other API calls → proxied to backend
       {
         source: "/api/v1/:path*",
