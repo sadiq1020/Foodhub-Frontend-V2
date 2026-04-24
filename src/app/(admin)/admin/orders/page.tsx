@@ -118,7 +118,7 @@ export default function AdminOrdersPage() {
     };
 
     fetchOrders();
-  }, [session?.user?.id, page, search, statusFilter]);
+  }, [session?.user, session?.user?.id, page, search, statusFilter]);
 
   if (isPending) return <LoadingSkeleton />;
   if (!session?.user) return null;
@@ -172,7 +172,7 @@ export default function AdminOrdersPage() {
               onClick={() => setParam("status", status, true)}
               className={`rounded-full whitespace-nowrap ${
                 statusFilter === status
-                  ? "bg-orange-500 hover:bg-orange-600 text-white border-0"
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-zinc-950 border-0"
                   : ""
               }`}
             >
