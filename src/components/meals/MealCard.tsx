@@ -63,7 +63,7 @@ export function MealCard({ meal }: { meal: Meal }) {
         ${
           isOutOfStock
             ? "opacity-70 cursor-not-allowed"
-            : "cursor-pointer hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-lg hover:shadow-orange-100 dark:hover:shadow-orange-950/20"
+            : "cursor-pointer hover:border-emerald-500/40 dark:hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/10"
         }`}
     >
       <div className="relative w-full aspect-video overflow-hidden">
@@ -78,7 +78,7 @@ export function MealCard({ meal }: { meal: Meal }) {
             }`}
           />
         ) : (
-          <div className="w-full h-full bg-linear-to-br from-orange-100 to-rose-100 dark:from-orange-950/50 dark:to-rose-950/50 flex items-center justify-center">
+          <div className="w-full h-full bg-linear-to-br from-emerald-950/30 to-teal-950/30 dark:from-emerald-950/30 dark:to-teal-950/30 flex items-center justify-center">
             <span className="text-4xl">🍽️</span>
           </div>
         )}
@@ -114,7 +114,7 @@ export function MealCard({ meal }: { meal: Meal }) {
           {meal.category.name}
         </p>
 
-        <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-1">
+        <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
           {meal.name}
         </h3>
 
@@ -123,7 +123,7 @@ export function MealCard({ meal }: { meal: Meal }) {
         </p>
 
         <div className="flex items-center justify-between pt-1">
-          <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
+          <span className="text-lg font-bold text-emerald-500 dark:text-emerald-400">
             ৳{meal.price}
           </span>
 
@@ -135,7 +135,7 @@ export function MealCard({ meal }: { meal: Meal }) {
             <Button
               size="sm"
               onClick={handleAddToCart}
-              className="h-8 rounded-full bg-orange-500 hover:bg-orange-600 text-white border-0 gap-1.5 text-xs px-3"
+              className="h-8 rounded-full bg-emerald-500 hover:bg-emerald-600 text-zinc-950 border-0 gap-1.5 text-xs px-3"
             >
               <ShoppingCart className="w-3 h-3" />
               <span suppressHydrationWarning>Add to Cart</span>

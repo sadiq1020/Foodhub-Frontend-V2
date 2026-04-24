@@ -63,7 +63,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
 
       {/* Subtotal */}
       <div className="text-right shrink-0 w-20">
-        <p className="font-bold text-orange-600 dark:text-orange-400">
+        <p className="font-bold text-emerald-500 dark:text-emerald-400">
           ৳{item.price * item.quantity}
         </p>
       </div>

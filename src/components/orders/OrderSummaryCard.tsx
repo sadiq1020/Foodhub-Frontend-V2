@@ -34,7 +34,7 @@ export function OrderSummaryCard({
           <span className="font-bold text-zinc-900 dark:text-zinc-50">
             Total
           </span>
-          <span className="font-bold text-xl text-orange-600 dark:text-orange-400">
+          <span className="font-bold text-xl text-emerald-500 dark:text-emerald-400">
             ৳{total}
           </span>
         </div>

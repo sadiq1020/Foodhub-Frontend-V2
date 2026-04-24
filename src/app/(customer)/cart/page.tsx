@@ -28,7 +28,7 @@ export default function CartPage() {
   if (isPending) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -44,8 +44,8 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-24 h-24 rounded-full bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center mx-auto mb-6">
-            <ShoppingCart className="w-10 h-10 text-orange-400" />
+          <div className="w-24 h-24 rounded-full bg-emerald-950/20 dark:bg-emerald-950/30 flex items-center justify-center mx-auto mb-6">
+            <ShoppingCart className="w-10 h-10 text-emerald-400" />
           </div>
           <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">
             Your cart is empty
@@ -56,7 +56,7 @@ export default function CartPage() {
           </p>
           <Button
             asChild
-            className="rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
+            className="rounded-full bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 text-zinc-950 px-8"
           >
             <Link href="/meals">Browse Meals</Link>
           </Button>
@@ -157,7 +157,7 @@ export default function CartPage() {
                     <span className="font-bold text-zinc-900 dark:text-zinc-50">
                       Total
                     </span>
-                    <span className="font-bold text-xl text-orange-600 dark:text-orange-400">
+                    <span className="font-bold text-xl text-emerald-500 dark:text-emerald-400">
                       ৳{total}
                     </span>
                   </div>
@@ -167,7 +167,7 @@ export default function CartPage() {
               {/* Checkout Button */}
               <Button
                 asChild
-                className="w-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white h-11 gap-2"
+                className="w-full rounded-full bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 text-zinc-950 h-11 gap-2"
               >
                 <Link href="/checkout">
                   Proceed to Checkout

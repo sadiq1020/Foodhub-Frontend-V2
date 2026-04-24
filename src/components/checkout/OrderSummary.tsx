@@ -65,7 +65,7 @@ export function OrderSummary({
           <span className="font-bold text-zinc-900 dark:text-zinc-50">
             Total
           </span>
-          <span className="font-bold text-xl text-orange-600 dark:text-orange-400">
+          <span className="font-bold text-xl text-emerald-500 dark:text-emerald-400">
             ৳{total}
           </span>
         </div>
@@ -76,7 +76,7 @@ export function OrderSummary({
         form="checkout-form"
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white h-11 gap-2"
+        className="w-full rounded-full bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 text-zinc-950 h-11 gap-2"
       >
         <ShoppingBag className="w-4 h-4" />
         {isSubmitting ? "Redirecting to Payment..." : "Place Order & Pay"}

@@ -197,7 +197,7 @@ const Navbar = ({ className }: { className?: string }) => {
                 className="h-10 w-10"
               />
               <span className="text-xl font-bold">
-                <span className="text-orange-500">Food</span>Hub
+                <span className="text-emerald-500">Food</span>Hub
               </span>
             </Link>
 
@@ -231,7 +231,7 @@ const Navbar = ({ className }: { className?: string }) => {
                 <Link href="/cart">
                   <ShoppingCart className="w-4 h-4" />
                   {cartItemsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
                       {cartItemsCount}
                     </span>
                   )}
@@ -257,7 +257,7 @@ const Navbar = ({ className }: { className?: string }) => {
                 className="h-10 w-10"
               />
               <span className="text-xl font-bold">
-                <span className="text-orange-500">Food</span>Hub
+                <span className="text-emerald-500">Food</span>Hub
               </span>
             </Link>
 
@@ -274,7 +274,7 @@ const Navbar = ({ className }: { className?: string }) => {
                   <Link href="/cart">
                     <ShoppingCart className="w-4 h-4" />
                     {cartItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-semibent">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white text-xs rounded-full flex items-center justify-center font-semibent">
                         {cartItemsCount}
                       </span>
                     )}
@@ -301,7 +301,7 @@ const Navbar = ({ className }: { className?: string }) => {
                           className="h-8 w-8"
                         />
                         <span className="text-lg font-semibold">
-                          <span className="text-orange-500">Food</span>Hub
+                          <span className="text-emerald-500">Food</span>Hub
                         </span>
                       </Link>
                     </SheetTitle>

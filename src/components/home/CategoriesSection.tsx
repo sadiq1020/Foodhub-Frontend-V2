@@ -2,75 +2,149 @@
 
 import { api } from "@/lib/api";
 import { Category } from "@/types";
-import { useEffect, useState } from "react";
-import { CategoryCard } from "./CategoryCard";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+
+function useVisible() {
+  const ref = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.15 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+
+function CategoryCard({
+  category,
+  index,
+}: {
+  category: Category;
+  index: number;
+}) {
+  const router = useRouter();
+  const { ref, visible } = useVisible();
+
+  return (
+    <div
+      ref={ref as React.RefObject<HTMLDivElement>}
+      onClick={() => router.push(`/meals?category=${category.id}`)}
+      className="group relative cursor-pointer rounded-2xl overflow-hidden border border-zinc-800 hover:border-emerald-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 aspect-[4/3]"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible
+          ? "translateY(0) scale(1)"
+          : "translateY(20px) scale(0.97)",
+        transition: `opacity 0.55s ease ${index * 80}ms, transform 0.55s ease ${index * 80}ms`,
+      }}
+    >
+      {/* Image or fallback */}
+      {category.image ? (
+        <Image
+          src={category.image}
+          alt={category.name}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+      ) : (
+        <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
+          <span className="text-5xl opacity-40">🍽️</span>
+        </div>
+      )}
+
+      {/* Gradient overlay — always present, deepens on hover */}
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/30 to-transparent group-hover:from-zinc-950/95 group-hover:via-zinc-950/50 transition-all duration-300" />
+
+      {/* Emerald accent line — slides in from left on hover */}
+      <div className="absolute bottom-0 left-0 h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500 ease-out" />
+
+      {/* Text */}
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <h3 className="font-semibold text-white text-base leading-tight">
+          {category.name}
+        </h3>
+        {category._count && (
+          <p className="text-xs text-zinc-400 mt-0.5 group-hover:text-emerald-400 transition-colors duration-300">
+            {category._count.meals} meals
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function CategoriesSection() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { ref: headerRef, visible: headerVisible } = useVisible();
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await api.get("/categories");
-        setCategories(data.data || data);
-      } catch (error) {
-        // console.error("Failed to fetch categories:", error);
-        setCategories([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCategories();
+    api
+      .get("/categories")
+      .then((data) => setCategories(data.data || data))
+      .catch(() => setCategories([]))
+      .finally(() => setIsLoading(false));
   }, []);
 
-  if (isLoading) {
-    return (
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
-              Browse by Category
-            </h2>
-            <p className="text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">
-              Find exactly what you&apos;re craving from our wide selection
+  return (
+    <section className="py-24 bg-background relative">
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <div
+          ref={headerRef as React.RefObject<HTMLDivElement>}
+          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12"
+          style={{
+            opacity: headerVisible ? 1 : 0,
+            transform: headerVisible ? "translateY(0)" : "translateY(20px)",
+            transition: "opacity 0.6s ease, transform 0.6s ease",
+          }}
+        >
+          <div>
+            <p className="text-emerald-500 text-xs font-semibold tracking-widest uppercase mb-2">
+              Explore
             </p>
+            <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+              Browse by category
+            </h2>
           </div>
+          <p className="text-zinc-500 text-sm max-w-xs leading-relaxed sm:text-right">
+            Find exactly what you&apos;re craving from our wide selection of
+            local cuisine.
+          </p>
+        </div>
+
+        {/* Grid */}
+        {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-square rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse"
+                className="aspect-[4/3] rounded-2xl bg-zinc-100 dark:bg-zinc-800 animate-pulse"
               />
             ))}
           </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
-            Browse by Category
-          </h2>
-          <p className="text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">
-            Find exactly what you&apos;re craving from our wide selection
-          </p>
-        </div>
-
-        {categories.length === 0 ? (
-          <div className="text-center py-12 text-zinc-400">
-            <p className="text-4xl mb-3">🍽️</p>
-            <p>No categories available yet.</p>
+        ) : categories.length === 0 ? (
+          <div className="text-center py-16 text-zinc-400">
+            <p className="text-5xl mb-4">🍽️</p>
+            <p>No categories yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categories.map((category) => (
-              <CategoryCard key={category.id} category={category} />
+            {categories.map((cat, i) => (
+              <CategoryCard key={cat.id} category={cat} index={i} />
             ))}
           </div>
         )}

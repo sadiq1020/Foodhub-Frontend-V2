@@ -84,7 +84,7 @@ export function AddToCart({ meal }: { meal: AddToCartMeal }) {
 
       <Button
         onClick={handleAddToCart}
-        className="flex-1 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white h-11 gap-2"
+        className="flex-1 rounded-full bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 text-zinc-950 h-11 gap-2"
       >
         <ShoppingCart className="w-4 h-4" />
         {/*  Show different text based on login status */}

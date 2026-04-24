@@ -5,108 +5,129 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { Meal } from "@/types";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MealCard } from "../meals/MealCard";
+
+function useVisible() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
 
 export function FeaturedMeals() {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { ref: headerRef, visible: headerVisible } = useVisible();
 
   useEffect(() => {
-    const fetchMeals = async () => {
-      try {
-        // console.log("🔍 Fetching meals from: /meals?isAvailable=true");
-        const data = await api.get("/meals?isAvailable=true");
-        // console.log("✅ Meals data:", data); //
-        const allMeals = data.data || data;
-        // Limit to 8 meals
-        setMeals(Array.isArray(allMeals) ? allMeals.slice(0, 8) : []);
-      } catch (error) {
-        // console.error("❌ Failed to fetch meals:", error); //
-        setMeals([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchMeals();
+    api
+      .get("/meals?isAvailable=true")
+      .then((data) => {
+        const all = data.data || data;
+        setMeals(Array.isArray(all) ? all.slice(0, 8) : []);
+      })
+      .catch(() => setMeals([]))
+      .finally(() => setIsLoading(false));
   }, []);
 
-  if (isLoading) {
-    return (
-      <section className="py-16 bg-zinc-50 dark:bg-zinc-900/50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
-            <div>
-              <Skeleton className="h-10 w-64 mb-2" />
-              <Skeleton className="h-5 w-96" />
-            </div>
-            <Skeleton className="h-10 w-40 rounded-full" />
-          </div>
+  return (
+    <section className="py-24 bg-zinc-950 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse, rgba(0,214,143,0.04) 0%, transparent 70%)",
+        }}
+      />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="container mx-auto px-4 relative">
+        {/* Header */}
+        <div
+          ref={headerRef}
+          className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12"
+          style={{
+            opacity: headerVisible ? 1 : 0,
+            transform: headerVisible ? "translateY(0)" : "translateY(20px)",
+            transition: "opacity 0.7s ease, transform 0.7s ease",
+          }}
+        >
+          <div>
+            <p className="text-emerald-400 text-xs font-semibold tracking-widest uppercase mb-2">
+              Handpicked for you
+            </p>
+            <h2 className="text-4xl md:text-5xl font-bold text-white">
+              Featured meals
+            </h2>
+          </div>
+          <Button
+            asChild
+            variant="outline"
+            className="rounded-xl border-zinc-700 text-zinc-300 hover:border-emerald-500/50 hover:text-emerald-400 hover:bg-emerald-500/5 transition-all duration-200 shrink-0"
+          >
+            <Link href="/meals">View all meals →</Link>
+          </Button>
+        </div>
+
+        {/* Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="rounded-xl overflow-hidden border">
-                <Skeleton className="aspect-video w-full" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
+              <div
+                key={i}
+                className="rounded-2xl overflow-hidden border border-zinc-800"
+              >
+                <Skeleton className="aspect-video w-full bg-zinc-800" />
+                <div className="p-4 space-y-2 bg-zinc-900">
+                  <Skeleton className="h-4 w-20 bg-zinc-800" />
+                  <Skeleton className="h-5 w-3/4 bg-zinc-800" />
+                  <Skeleton className="h-4 w-1/2 bg-zinc-800" />
                   <div className="flex justify-between pt-2">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-9 w-24 rounded-full" />
+                    <Skeleton className="h-6 w-16 bg-zinc-800" />
+                    <Skeleton className="h-9 w-24 rounded-xl bg-zinc-800" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="py-16 bg-zinc-50 dark:bg-zinc-900/50">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">
-              Featured Meals
-            </h2>
-            <p className="text-zinc-500 dark:text-zinc-400">
-              Handpicked delicious meals from our top providers
-            </p>
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            className="rounded-full border-zinc-300 dark:border-zinc-700 shrink-0"
-          >
-            <Link href="/meals">View All Meals →</Link>
-          </Button>
-        </div>
-
-        {/* Meals Grid */}
-        {meals.length === 0 ? (
-          <div className="text-center py-12 text-zinc-400">
-            <p className="text-4xl mb-3">🍽️</p>
+        ) : meals.length === 0 ? (
+          <div className="text-center py-16 text-zinc-500">
+            <p className="text-5xl mb-4">🍽️</p>
             <p>No meals available yet.</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {meals.map((meal) => (
                 <MealCard key={meal.id} meal={meal} />
               ))}
             </div>
 
             {/* Bottom CTA */}
-            <div className="text-center mt-10">
+            <div className="text-center mt-14">
               <Button
                 asChild
                 size="lg"
-                className="rounded-full px-8 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white"
+                className="rounded-xl px-10 h-12 font-semibold text-zinc-950 transition-all duration-200 hover:scale-[1.03] hover:shadow-lg hover:shadow-emerald-500/25"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #00d68f 0%, #14b8a6 100%)",
+                }}
               >
                 <Link href="/meals">Browse All Meals →</Link>
               </Button>

@@ -103,7 +103,7 @@ export default function OrdersPage() {
   if (isPending) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function OrdersPage() {
                 onClick={() => handleStatusChange(tab.value)}
                 className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeStatus === tab.value
-                    ? "border-orange-500 text-orange-600 dark:text-orange-400"
+                    ? "border-emerald-500 text-emerald-500 dark:text-emerald-400"
                     : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
                 }`}
               >
@@ -149,8 +149,8 @@ export default function OrdersPage() {
           <OrdersListSkeleton />
         ) : orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-20 h-20 rounded-full bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center mb-6">
-              <ShoppingBag className="w-8 h-8 text-orange-400" />
+            <div className="w-20 h-20 rounded-full bg-emerald-500/10 dark:bg-emerald-950/20 flex items-center justify-center mb-6">
+              <ShoppingBag className="w-8 h-8 text-emerald-400" />
             </div>
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">
               {activeStatus
@@ -165,7 +165,7 @@ export default function OrdersPage() {
             {!activeStatus && (
               <Button
                 asChild
-                className="rounded-full bg-linear-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 text-white px-8"
+                className="rounded-full bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 text-zinc-950 px-8"
               >
                 <Link href="/meals">Browse Meals</Link>
               </Button>

@@ -77,8 +77,8 @@ export function FavouriteButton({ mealId, size = "md" }: FavouriteButtonProps) {
       className={`${buttonSize} rounded-full flex items-center justify-center transition-all duration-200
         ${
           isFavourited
-            ? "bg-orange-500 text-white shadow-md"
-            : "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-500 dark:text-zinc-400 hover:bg-orange-50 dark:hover:bg-zinc-700 hover:text-orange-500"
+            ? "bg-emerald-500 text-zinc-950 shadow-md"
+            : "bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm text-zinc-500 dark:text-zinc-400 hover:bg-emerald-500/10 dark:hover:bg-zinc-700 hover:text-emerald-500"
         }
         ${isLoading ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}
       `}

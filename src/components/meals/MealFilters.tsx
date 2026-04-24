@@ -134,7 +134,7 @@ export function MealFilters({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-50 font-semibold">
-          <SlidersHorizontal className="w-4 h-4 text-orange-500" />
+          <SlidersHorizontal className="w-4 h-4 text-emerald-500" />
           Filters
         </div>
         {hasActiveFilters && (

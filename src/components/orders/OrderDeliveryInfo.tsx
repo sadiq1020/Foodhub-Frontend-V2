@@ -19,7 +19,7 @@ export function OrderDeliveryInfo({
 
       <div className="space-y-3">
         <div className="flex gap-3">
-          <MapPin className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+          <MapPin className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
           <div>
             <p className="text-xs text-zinc-400 uppercase tracking-wide mb-1">
               Address
@@ -31,7 +31,7 @@ export function OrderDeliveryInfo({
         </div>
 
         <div className="flex gap-3">
-          <Phone className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+          <Phone className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
           <div>
             <p className="text-xs text-zinc-400 uppercase tracking-wide mb-1">
               Phone
@@ -42,7 +42,7 @@ export function OrderDeliveryInfo({
 
         {notes && (
           <div className="flex gap-3">
-            <MessageSquare className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+            <MessageSquare className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
             <div>
               <p className="text-xs text-zinc-400 uppercase tracking-wide mb-1">
                 Notes

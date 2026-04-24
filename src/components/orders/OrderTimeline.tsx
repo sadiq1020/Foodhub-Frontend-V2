@@ -42,7 +42,7 @@ export function OrderTimeline({ status }: OrderTimelineProps) {
         {/* Progress line */}
         <div className="absolute top-6 left-6 right-6 h-0.5 bg-zinc-200 dark:bg-zinc-800">
           <div
-            className="h-full bg-orange-500 transition-all duration-500"
+            className="h-full bg-emerald-500 transition-all duration-500"
             style={{ width: `${(currentIndex / (steps.length - 1)) * 100}%` }}
           />
         </div>
@@ -61,9 +61,9 @@ export function OrderTimeline({ status }: OrderTimelineProps) {
                 <div
                   className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${
                     isCompleted
-                      ? "bg-orange-500 text-white scale-110"
+                      ? "bg-emerald-500 text-zinc-950 scale-110"
                       : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
-                  } ${isCurrent && "ring-4 ring-orange-200 dark:ring-orange-900"}`}
+                  } ${isCurrent && "ring-4 ring-emerald-500/30 dark:ring-emerald-500/20"}`}
                 >
                   {step.icon}
                 </div>

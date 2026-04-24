@@ -10,169 +10,130 @@ import { useEffect, useRef, useState } from "react";
 
 const steps = [
   {
-    number: "01",
     icon: ShoppingBag,
     title: "Browse Meals",
     description:
-      "Explore hundreds of delicious meals from the best local restaurants and home cooks in your area.",
+      "Explore hundreds of homemade dishes from local cooks and restaurants around you.",
   },
   {
-    number: "02",
     icon: ShoppingCart,
-    title: "Add to Cart & Checkout",
+    title: "Add & Checkout",
     description:
-      "Select your favorite meals, add them to your cart, and complete your order in just a few clicks.",
+      "Pick your favorites, add to cart, and pay securely in a few quick taps.",
   },
   {
-    number: "03",
     icon: MapPin,
-    title: "Track Your Order",
+    title: "Track Live",
     description:
-      "Follow your order in real-time from the kitchen to your doorstep. Always know where your food is.",
+      "Follow your order in real-time from the kitchen straight to your doorstep.",
   },
   {
-    number: "04",
     icon: UtensilsCrossed,
-    title: "Enjoy Delicious Food!",
+    title: "Enjoy!",
     description:
-      "Sit back, relax, and enjoy fresh, hot meals delivered right to your door. Bon appétit!",
+      "Sit back and enjoy fresh, hot food made with love — right at your door.",
   },
 ];
 
-// Each step card animates in when it enters the viewport
-function AnimatedStep({
-  step,
-  index,
-  isLast,
-}: {
-  step: (typeof steps)[0];
-  index: number;
-  isLast: boolean;
-}) {
+function useVisible(threshold = 0.2) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const Icon = step.icon;
-
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
-    const observer = new IntersectionObserver(
+    const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          // Stagger: each card waits a bit longer than the previous one
-          setTimeout(() => setVisible(true), index * 150);
-          observer.disconnect(); // animate once only
+          setVisible(true);
+          obs.disconnect();
         }
       },
-      { threshold: 0.2 },
+      { threshold },
     );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [index]);
-
-  return (
-    <div
-      ref={ref}
-      className="relative flex flex-col items-center text-center"
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0px)" : "translateY(32px)",
-        transition: "opacity 0.6s ease, transform 0.6s ease",
-      }}
-    >
-      {/* Connector line between steps */}
-      {!isLast && (
-        <div
-          className="hidden lg:block absolute top-10 left-[60%] w-full h-px z-0"
-          style={{
-            background: "linear-gradient(to right, #fed7aa, #ffedd5)",
-          }}
-        />
-      )}
-
-      {/* Icon Circle */}
-      <div className="relative z-10 w-20 h-20 rounded-full bg-orange-50 dark:bg-orange-950/50 border-2 border-orange-200 dark:border-orange-800 flex items-center justify-center mb-4 transition-all duration-300 hover:border-orange-400 hover:scale-110 hover:shadow-lg hover:shadow-orange-100 dark:hover:shadow-orange-950/50 cursor-default">
-        <Icon className="w-8 h-8 text-orange-500 dark:text-orange-400" />
-
-        {/* Step Number Badge — pops in with a spring bounce after the card appears */}
-        <span
-          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center"
-          style={{
-            opacity: visible ? 1 : 0,
-            transform: visible ? "scale(1)" : "scale(0)",
-            transition: `opacity 0.4s ease ${index * 150 + 300}ms, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 150 + 300}ms`,
-          }}
-        >
-          {index + 1}
-        </span>
-      </div>
-
-      {/* Text */}
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
-        {step.title}
-      </h3>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-        {step.description}
-      </p>
-    </div>
-  );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, visible };
 }
 
 export function HowItWorks() {
-  const headerRef = useRef<HTMLDivElement>(null);
-  const [headerVisible, setHeaderVisible] = useState(false);
-
-  useEffect(() => {
-    const el = headerRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setHeaderVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const { ref: headerRef, visible: headerVisible } = useVisible(0.3);
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-24 bg-zinc-950 relative overflow-hidden">
+      {/* Subtle top border line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 bg-linear-to-b from-transparent to-emerald-500/40" />
+
       <div className="container mx-auto px-4">
-        {/* Section Header — fades in downward on scroll */}
+        {/* Header */}
         <div
           ref={headerRef}
-          className="text-center mb-12"
+          className="text-center mb-16"
           style={{
             opacity: headerVisible ? 1 : 0,
-            transform: headerVisible ? "translateY(0px)" : "translateY(-20px)",
-            transition: "opacity 0.6s ease, transform 0.6s ease",
+            transform: headerVisible ? "translateY(0)" : "translateY(20px)",
+            transition: "opacity 0.7s ease, transform 0.7s ease",
           }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
-            How It Works
+          <p className="text-emerald-400 text-xs font-semibold tracking-widest uppercase mb-3">
+            Simple process
+          </p>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            How it works
           </h2>
-          <p className="text-zinc-500 dark:text-zinc-400 max-w-md mx-auto">
-            Order your favorite food in 4 simple steps
+          <p className="text-zinc-500 max-w-sm mx-auto">
+            From craving to delivery in four effortless steps.
           </p>
         </div>
 
-        {/* Steps Grid — each card animates in with staggered delay */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => (
-            <AnimatedStep
-              key={step.number}
-              step={step}
-              index={index}
-              isLast={index === steps.length - 1}
-            />
+        {/* Steps */}
+        <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Connector line — desktop only */}
+          <div className="hidden lg:block absolute top-10 left-[12.5%] right-[12.5%] h-px bg-linear-to-r from-transparent via-emerald-500/20 to-transparent" />
+
+          {steps.map((step, i) => (
+            <StepCard key={step.title} step={step} index={i} />
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
+  const { ref, visible } = useVisible(0.15);
+  const Icon = step.icon;
+
+  return (
+    <div
+      ref={ref}
+      className="relative flex flex-col items-center text-center group"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(32px)",
+        transition: `opacity 0.65s ease ${index * 120}ms, transform 0.65s ease ${index * 120}ms`,
+      }}
+    >
+      {/* Step number — top left corner accent */}
+      <span
+        className="text-[11px] font-bold tracking-widest text-emerald-500/50 uppercase mb-4"
+        style={{
+          opacity: visible ? 1 : 0,
+          transition: `opacity 0.5s ease ${index * 120 + 300}ms`,
+        }}
+      >
+        Step {String(index + 1).padStart(2, "0")}
+      </span>
+
+      {/* Icon */}
+      <div className="relative w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-800 group-hover:border-emerald-500/40 flex items-center justify-center mb-5 transition-all duration-300 group-hover:bg-emerald-500/5 group-hover:shadow-lg group-hover:shadow-emerald-500/10">
+        <Icon className="w-8 h-8 text-zinc-400 group-hover:text-emerald-400 transition-colors duration-300" />
+      </div>
+
+      <h3 className="text-base font-semibold text-white mb-2">{step.title}</h3>
+      <p className="text-sm text-zinc-500 leading-relaxed max-w-45">
+        {step.description}
+      </p>
+    </div>
   );
 }
