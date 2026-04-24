@@ -1,8 +1,8 @@
 "use client";
 
 import { Package, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminOrderCard } from "@/components/admin/AdminOrderCard";
@@ -17,10 +17,7 @@ type OrderItem = {
   id: string;
   quantity: number;
   price: number;
-  meal: {
-    id: string;
-    name: string;
-  };
+  meal: { id: string; name: string };
 };
 
 type Order = {
@@ -30,11 +27,7 @@ type Order = {
   total: number;
   deliveryAddress: string;
   createdAt: string;
-  customer: {
-    id: string;
-    name: string;
-    email: string;
-  };
+  customer: { id: string; name: string; email: string };
   items: OrderItem[];
 };
 
@@ -46,44 +39,78 @@ type StatusFilter =
   | "DELIVERED"
   | "CANCELLED";
 
+const LIMIT = 10;
+
 export default function AdminOrdersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
+
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
-  const hasFetched = useRef(false);
 
-  // Protected route
+  // Read state from URL
+  const page = Number(searchParams.get("page") || "1");
+  const search = searchParams.get("search") || "";
+  const statusFilter = (searchParams.get("status") || "ALL") as StatusFilter;
+
+  // Debounced search input (local state, synced to URL after delay)
+  const [searchInput, setSearchInput] = useState(search);
+
+  // Auth guard
   useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.push("/login");
-    }
-
+    if (!isPending && !session?.user) router.push("/login");
     if (!isPending && session?.user) {
-      const userRole = (session.user as { role?: string }).role;
-      if (userRole !== "ADMIN") {
-        router.push("/");
-      }
+      const role = (session.user as { role?: string }).role;
+      if (role !== "ADMIN") router.push("/");
     }
   }, [session, isPending, router]);
 
-  // Fetch orders — only once per mount, not every time session object re-renders
+  // Sync URL → input on mount
+  useEffect(() => {
+    setSearchInput(search);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounce search input → URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setParam("search", searchInput, true); // reset to page 1 on new search
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const setParam = useCallback(
+    (key: string, value: string, resetPage = false) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value && value !== "ALL") {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      if (resetPage) params.delete("page");
+      router.push(`?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router],
+  );
+
+  // Fetch from backend whenever URL params change
   useEffect(() => {
     if (!session?.user) return;
-    if (hasFetched.current) return;
 
     const fetchOrders = async () => {
+      setIsLoading(true);
       try {
-        hasFetched.current = true;
-        setIsLoading(true);
-        const data = await api.get("/orders/admin/all");
-        setOrders(data.data || data);
-        setFilteredOrders(data.data || data);
-      } catch (error) {
-        // console.error("Failed to fetch orders:", error);
+        const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("limit", String(LIMIT));
+        if (search) params.set("search", search);
+        if (statusFilter !== "ALL") params.set("status", statusFilter);
+
+        const data = await api.get(`/orders/admin/all?${params.toString()}`);
+        setOrders(data.data || []);
+        setTotal(data.meta?.total || 0);
+      } catch {
         toast.error("Failed to load orders");
       } finally {
         setIsLoading(false);
@@ -91,61 +118,12 @@ export default function AdminOrdersPage() {
     };
 
     fetchOrders();
-  }, [session?.user?.id]); // ✅ Stable string, not the whole session object
+  }, [session?.user?.id, page, search, statusFilter]);
 
-  // Filter and search
-  useEffect(() => {
-    let result = orders;
-
-    // Filter by status
-    if (statusFilter !== "ALL") {
-      result = result.filter((order) => order.status === statusFilter);
-    }
-
-    // Search by order number
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter((order) =>
-        order.orderNumber.toLowerCase().includes(query),
-      );
-    }
-
-    setFilteredOrders(result);
-  }, [orders, statusFilter, searchQuery]);
-
-  if (isPending) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-        <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="container mx-auto px-4 py-6">
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-        </div>
-        <div className="container mx-auto px-4 py-8">
-          <Skeleton className="h-10 w-full mb-6" />
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i} className="p-6">
-                <Skeleton className="h-24 w-full" />
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  if (isPending) return <LoadingSkeleton />;
   if (!session?.user) return null;
 
-  const statusCounts = {
-    ALL: orders.length,
-    PLACED: orders.filter((o) => o.status === "PLACED").length,
-    PREPARING: orders.filter((o) => o.status === "PREPARING").length,
-    READY: orders.filter((o) => o.status === "READY").length,
-    DELIVERED: orders.filter((o) => o.status === "DELIVERED").length,
-    CANCELLED: orders.filter((o) => o.status === "CANCELLED").length,
-  };
+  const totalPages = Math.ceil(total / LIMIT);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -156,7 +134,7 @@ export default function AdminOrdersPage() {
             Orders Overview
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-0.5">
-            View all orders across the platform
+            {total} total order{total !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
@@ -168,8 +146,8 @@ export default function AdminOrdersPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
             <Input
               placeholder="Search by order number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="pl-10 rounded-xl"
             />
           </div>
@@ -191,15 +169,14 @@ export default function AdminOrdersPage() {
               key={status}
               variant={statusFilter === status ? "default" : "outline"}
               size="sm"
-              onClick={() => setStatusFilter(status)}
+              onClick={() => setParam("status", status, true)}
               className={`rounded-full whitespace-nowrap ${
                 statusFilter === status
                   ? "bg-orange-500 hover:bg-orange-600 text-white border-0"
                   : ""
               }`}
             >
-              {status === "ALL" ? "All Orders" : status} ({statusCounts[status]}
-              )
+              {status === "ALL" ? "All Orders" : status}
             </Button>
           ))}
         </div>
@@ -213,7 +190,7 @@ export default function AdminOrdersPage() {
               </Card>
             ))}
           </div>
-        ) : filteredOrders.length === 0 ? (
+        ) : orders.length === 0 ? (
           <div className="text-center py-24">
             <div className="w-24 h-24 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-6">
               <Package className="w-12 h-12 text-zinc-400" />
@@ -222,18 +199,68 @@ export default function AdminOrdersPage() {
               No orders found
             </h2>
             <p className="text-zinc-500 dark:text-zinc-400">
-              {searchQuery
+              {search
                 ? "Try adjusting your search"
                 : "No orders match this filter"}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredOrders.map((order) => (
+            {orders.map((order) => (
               <AdminOrderCard key={order.id} order={order} />
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-8">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Page {page} of {totalPages} · {total} orders
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setParam("page", String(page - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setParam("page", String(page + 1))}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="container mx-auto px-4 py-6">
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+      </div>
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-10 w-full mb-6" />
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i} className="p-6">
+              <Skeleton className="h-24 w-full" />
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

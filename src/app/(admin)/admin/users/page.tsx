@@ -1,8 +1,8 @@
 "use client";
 
 import { Search, Users as UsersIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { UserCard } from "@/components/admin/UserCard";
@@ -27,44 +27,77 @@ type User = {
 
 type RoleFilter = "ALL" | "CUSTOMER" | "PROVIDER" | "ADMIN";
 
+const LIMIT = 12;
+
 export default function AdminUsersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
+
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
-  const hasFetched = useRef(false);
 
-  // Protected route
+  // Read state from URL
+  const page = Number(searchParams.get("page") || "1");
+  const search = searchParams.get("search") || "";
+  const roleFilter = (searchParams.get("role") || "ALL") as RoleFilter;
+
+  // Local input state for debouncing
+  const [searchInput, setSearchInput] = useState(search);
+
+  // Auth guard
   useEffect(() => {
-    if (!isPending && !session?.user) {
-      router.push("/login");
-    }
-
+    if (!isPending && !session?.user) router.push("/login");
     if (!isPending && session?.user) {
-      const userRole = (session.user as { role?: string }).role;
-      if (userRole !== "ADMIN") {
-        router.push("/");
-      }
+      const role = (session.user as { role?: string }).role;
+      if (role !== "ADMIN") router.push("/");
     }
   }, [session, isPending, router]);
 
-  // Fetch users — only once per mount
+  useEffect(() => {
+    setSearchInput(search);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounce search → URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setParam("search", searchInput, true);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const setParam = useCallback(
+    (key: string, value: string, resetPage = false) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value && value !== "ALL") {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      if (resetPage) params.delete("page");
+      router.push(`?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router],
+  );
+
+  // Fetch from backend whenever URL params change
   useEffect(() => {
     if (!session?.user) return;
-    if (hasFetched.current) return;
 
     const fetchUsers = async () => {
+      setIsLoading(true);
       try {
-        hasFetched.current = true;
-        setIsLoading(true);
-        const data = await api.get("/users");
-        setUsers(data.data || data);
-        setFilteredUsers(data.data || data);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
+        const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("limit", String(LIMIT));
+        if (search) params.set("search", search);
+        if (roleFilter !== "ALL") params.set("role", roleFilter);
+
+        const data = await api.get(`/users?${params.toString()}`);
+        setUsers(data.data || []);
+        setTotal(data.meta?.total || 0);
+      } catch {
         toast.error("Failed to load users");
       } finally {
         setIsLoading(false);
@@ -72,92 +105,33 @@ export default function AdminUsersPage() {
     };
 
     fetchUsers();
-  }, [session?.user?.id]); // ✅ Stable string, not the whole session object
+  }, [session?.user?.id, page, search, roleFilter]);
 
-  // Filter and search
-  useEffect(() => {
-    let result = users;
-
-    // Filter by role
-    if (roleFilter !== "ALL") {
-      result = result.filter((user) => user.role === roleFilter);
-    }
-
-    // Search by name or email
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (user) =>
-          user.name.toLowerCase().includes(query) ||
-          user.email.toLowerCase().includes(query),
-      );
-    }
-
-    setFilteredUsers(result);
-  }, [users, roleFilter, searchQuery]);
-
-  // Toggle user status
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
     const toastId = toast.loading(
       `${newStatus ? "Activating" : "Suspending"} user...`,
     );
-
     try {
-      await api.patch(`/users/${userId}/status`, {
-        isActive: newStatus,
-      });
-
-      // Update local state
-      setUsers(
-        users.map((user) =>
-          user.id === userId ? { ...user, isActive: newStatus } : user,
-        ),
+      await api.patch(`/users/${userId}/status`, { isActive: newStatus });
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isActive: newStatus } : u)),
       );
-
       toast.success(
         `User ${newStatus ? "activated" : "suspended"} successfully`,
-        { id: toastId },
+        {
+          id: toastId,
+        },
       );
     } catch (error: unknown) {
-      // const message =
-      //   error instanceof Error ? error.message : "Failed to update user status";
-      // toast.error(message, { id: toastId });
       handleApiError(error, toastId);
     }
   };
 
-  if (isPending) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-        <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="container mx-auto px-4 py-6">
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-        </div>
-        <div className="container mx-auto px-4 py-8">
-          <Skeleton className="h-10 w-full mb-6" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="p-6">
-                <Skeleton className="h-20 w-full" />
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  if (isPending) return <LoadingSkeleton />;
   if (!session?.user) return null;
 
-  const roleCounts = {
-    ALL: users.length,
-    CUSTOMER: users.filter((u) => u.role === "CUSTOMER").length,
-    PROVIDER: users.filter((u) => u.role === "PROVIDER").length,
-    ADMIN: users.filter((u) => u.role === "ADMIN").length,
-  };
+  const totalPages = Math.ceil(total / LIMIT);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -168,7 +142,7 @@ export default function AdminUsersPage() {
             User Management
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-0.5">
-            View and manage all users
+            {total} total user{total !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
@@ -180,8 +154,8 @@ export default function AdminUsersPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
             <Input
               placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="pl-10 rounded-xl"
             />
           </div>
@@ -195,15 +169,14 @@ export default function AdminUsersPage() {
                 key={role}
                 variant={roleFilter === role ? "default" : "outline"}
                 size="sm"
-                onClick={() => setRoleFilter(role)}
+                onClick={() => setParam("role", role, true)}
                 className={`rounded-full whitespace-nowrap ${
                   roleFilter === role
                     ? "bg-orange-500 hover:bg-orange-600 text-white border-0"
                     : ""
                 }`}
               >
-                {role === "ALL" ? "All Users" : `${role.toLowerCase()}s`} (
-                {roleCounts[role]})
+                {role === "ALL" ? "All Users" : `${role.toLowerCase()}s`}
               </Button>
             ),
           )}
@@ -218,7 +191,7 @@ export default function AdminUsersPage() {
               </Card>
             ))}
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : users.length === 0 ? (
           <div className="text-center py-24">
             <div className="w-24 h-24 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-6">
               <UsersIcon className="w-12 h-12 text-zinc-400" />
@@ -227,14 +200,14 @@ export default function AdminUsersPage() {
               No users found
             </h2>
             <p className="text-zinc-500 dark:text-zinc-400">
-              {searchQuery
+              {search
                 ? "Try adjusting your search"
                 : "No users match this filter"}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredUsers.map((user) => (
+            {users.map((user) => (
               <UserCard
                 key={user.id}
                 user={user}
@@ -243,6 +216,56 @@ export default function AdminUsersPage() {
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-8">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Page {page} of {totalPages} · {total} users
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setParam("page", String(page - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setParam("page", String(page + 1))}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="container mx-auto px-4 py-6">
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+      </div>
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-10 w-full mb-6" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="p-6">
+              <Skeleton className="h-20 w-full" />
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
