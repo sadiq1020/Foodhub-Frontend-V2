@@ -2,7 +2,7 @@
 
 import { Search, Users as UsersIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { UserCard } from "@/components/admin/UserCard";
@@ -29,7 +29,7 @@ type RoleFilter = "ALL" | "CUSTOMER" | "PROVIDER" | "ADMIN";
 
 const LIMIT = 12;
 
-export default function AdminUsersPage() {
+function AdminUsersContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
@@ -105,7 +105,7 @@ export default function AdminUsersPage() {
     };
 
     fetchUsers();
-  }, [session?.user?.id, page, search, roleFilter]);
+  }, [session?.user, session?.user?.id, page, search, roleFilter]);
 
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
@@ -172,7 +172,7 @@ export default function AdminUsersPage() {
                 onClick={() => setParam("role", role, true)}
                 className={`rounded-full whitespace-nowrap ${
                   roleFilter === role
-                    ? "bg-orange-500 hover:bg-orange-600 text-white border-0"
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-zinc-950 border-0"
                     : ""
                 }`}
               >
@@ -268,5 +268,13 @@ function LoadingSkeleton() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AdminUsersContent />
+    </Suspense>
   );
 }

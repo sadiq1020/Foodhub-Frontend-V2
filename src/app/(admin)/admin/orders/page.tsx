@@ -2,7 +2,7 @@
 
 import { Package, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminOrderCard } from "@/components/admin/AdminOrderCard";
@@ -41,7 +41,7 @@ type StatusFilter =
 
 const LIMIT = 10;
 
-export default function AdminOrdersPage() {
+function AdminOrdersContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
@@ -263,5 +263,13 @@ function LoadingSkeleton() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminOrdersPage() {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AdminOrdersContent />
+    </Suspense>
   );
 }
