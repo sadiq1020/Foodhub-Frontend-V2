@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Food hub",
+  title: "FoodHub — Delicious food, delivered",
   description: "Best Platform to find your next meal",
 };
 
@@ -33,23 +33,19 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        {/* suggested from online - Error boundary */}
-        {/* <ErrorBoundary> */}
-        <div>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SessionRefresher />
-            <Navbar />
-            {children}
-            <Toaster />
-            <Footer />
-          </ThemeProvider>
-        </div>
-        {/* </ErrorBoundary> */}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SessionRefresher />
+          {/* Navbar is fixed — children need top padding to not go under it */}
+          <Navbar />
+          <main className="pt-16">{children}</main>
+          <Toaster />
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
