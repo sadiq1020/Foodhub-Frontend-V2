@@ -2,6 +2,7 @@ import { CategoriesSection } from "@/components/home/CategoriesSection";
 import { FeaturedMeals } from "@/components/home/FeaturedMeals";
 import { HeroSection } from "@/components/home/HeroSection";
 import { HowItWorks } from "@/components/home/HowItWorks";
+import { StatsSection } from "@/components/home/StatsSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { TopProvidersSection } from "@/components/home/TopProvidersSection";
 
@@ -18,6 +19,7 @@ export default function Home() {
       {/* </Navbar> */}
       <TestimonialsSection />
       <TopProvidersSection />
+      <StatsSection />
     </>
   );
 }
