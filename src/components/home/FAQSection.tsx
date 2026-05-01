@@ -159,7 +159,7 @@ export function FAQSection() {
 
       {/* ── Subtle emerald glow top-right ── */}
       <motion.div
-        className="absolute top-0 right-0 w-80 h-80 rounded-full bg-emerald-400/[0.06] dark:bg-emerald-500/[0.04] blur-3xl pointer-events-none"
+        className="absolute top-0 right-0 w-80 h-80 rounded-full bg-emerald-400/6 blur-3xl pointer-events-none"
         animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.6, 0.4] }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
@@ -236,14 +236,14 @@ export function FAQSection() {
                         text-sm font-semibold text-zinc-800 dark:text-zinc-100
                         hover:no-underline hover:text-emerald-500 dark:hover:text-emerald-400
                         py-5 gap-3 transition-colors duration-200
-                        [&[data-state=open]]:text-emerald-500
-                        dark:[&[data-state=open]]:text-emerald-400
+                        data-[state=open]:text-emerald-500
+                        dark:data-[state=open]:text-emerald-400
                         [&>svg]:text-zinc-400
                         [&[data-state=open]>svg]:text-emerald-500
                       "
                     >
                       <span className="flex items-start gap-3 text-left">
-                        <Plus className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500 [&[data-state=open]]:rotate-45 transition-transform duration-200" />
+                        <Plus className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500 data-[state=open]:rotate-45 transition-transform duration-200" />
                         {faq.q}
                       </span>
                     </AccordionTrigger>

@@ -163,12 +163,12 @@ function ProviderCard({
           ))
         ) : (
           // Fallback: elegant gradient placeholder
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-emerald-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900">
+          <div className="flex-1 flex items-center justify-center bg-linear-to-br from-emerald-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900">
             <UtensilsCrossed className="w-10 h-10 text-zinc-300 dark:text-zinc-600" />
           </div>
         )}
         {/* Overlay gradient for readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent z-10" />
       </div>
 
       {/* ── Body ── */}
