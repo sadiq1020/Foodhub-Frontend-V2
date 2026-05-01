@@ -188,7 +188,7 @@ function StatCard({
         relative flex flex-col gap-4 p-6 rounded-2xl
         bg-white dark:bg-zinc-900
         border border-zinc-100 dark:border-zinc-800
-        shadow-sm shadow-black/4
+        shadow-sm shadow-black/[0.04]
         ring-1 ring-transparent transition-all duration-300
         hover:shadow-md hover:-translate-y-0.5
         ${def.borderColor}
@@ -293,15 +293,15 @@ export function StatsSection() {
     >
       {/* ── Decorative background orbs ── */}
       <Orb
-        className="w-80 h-80 bg-emerald-300/20 dark:bg-emerald-500/10 -top-20 -left-15"
+        className="w-80 h-80 bg-emerald-300/20 dark:bg-emerald-500/[0.05] top-[-80px] left-[-60px]"
         delay={0}
       />
       <Orb
-        className="w-72 h-72 bg-violet-300/20 dark:bg-violet-500/10 -bottom-15 -right-10"
+        className="w-72 h-72 bg-violet-300/20 dark:bg-violet-500/[0.05] bottom-[-60px] right-[-40px]"
         delay={2}
       />
       <Orb
-        className="w-48 h-48 bg-amber-300/15 dark:bg-amber-500/8 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        className="w-48 h-48 bg-amber-300/15 dark:bg-amber-500/[0.04] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         delay={4}
       />
 

@@ -163,12 +163,12 @@ function ProviderCard({
           ))
         ) : (
           // Fallback: elegant gradient placeholder
-          <div className="flex-1 flex items-center justify-center bg-linear-to-br from-emerald-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900">
+          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-emerald-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900">
             <UtensilsCrossed className="w-10 h-10 text-zinc-300 dark:text-zinc-600" />
           </div>
         )}
         {/* Overlay gradient for readability */}
-        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10" />
       </div>
 
       {/* ── Body ── */}
@@ -338,7 +338,7 @@ export function TopProvidersSection() {
   return (
     <section
       ref={ref}
-      className="relative py-20 bg-white dark:bg-zinc-900 overflow-hidden"
+      className="relative py-20 bg-white dark:bg-zinc-950 overflow-hidden"
     >
       {/* ── Subtle background grid ── */}
       <div
@@ -349,10 +349,6 @@ export function TopProvidersSection() {
           backgroundSize: "40px 40px",
         }}
       />
-
-      {/* ── Ambient glow blobs ── */}
-      <div className="absolute top-0 left-1/4 w-72 h-72 rounded-full bg-emerald-400/10 dark:bg-emerald-500/5 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-64 rounded-full bg-amber-400/10 dark:bg-amber-500/5 blur-3xl pointer-events-none" />
 
       {/* ── Floating food emojis ── */}
       {FOOD_PARTICLES.map((p, i) => (
