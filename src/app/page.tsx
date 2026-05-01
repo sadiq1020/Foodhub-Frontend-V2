@@ -3,6 +3,7 @@ import { FeaturedMeals } from "@/components/home/FeaturedMeals";
 import { HeroSection } from "@/components/home/HeroSection";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
+import { TopProvidersSection } from "@/components/home/TopProvidersSection";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <HowItWorks />
       {/* </Navbar> */}
       <TestimonialsSection />
+      <TopProvidersSection />
     </>
   );
 }
