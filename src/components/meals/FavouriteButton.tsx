@@ -19,7 +19,7 @@ export function FavouriteButton({ mealId, size = "md" }: FavouriteButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   // Only customers can use favourites — admins/providers get 403 from backend
-  const isCustomer = session?.user?.role === "CUSTOMER";
+  const isCustomer = (session?.user as { role?: string })?.role === "CUSTOMER";
 
   useEffect(() => {
     // Skip if: session still loading, no user logged in, or not a customer role
