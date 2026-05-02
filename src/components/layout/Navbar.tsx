@@ -41,7 +41,6 @@ const PUBLIC_NAV_LINKS = [
   { title: "Browse Meals", url: "/meals" },
   { title: "Providers", url: "/provider-profile" },
   { title: "About", url: "/about" },
-  { title: "Blog", url: "/blog" },
 ];
 
 // ─── Component ───────────────────────────────────────────────────────────────

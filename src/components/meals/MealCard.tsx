@@ -59,14 +59,14 @@ export function MealCard({ meal }: { meal: Meal }) {
   return (
     <Card
       onClick={() => !isOutOfStock && router.push(`/meals/${meal.id}`)}
-      className={`group overflow-hidden border border-zinc-200 dark:border-zinc-800 transition-all duration-300 p-0
+      className={`group overflow-hidden border border-zinc-200 dark:border-zinc-800 transition-all duration-300 p-0 flex flex-col h-full
         ${
           isOutOfStock
             ? "opacity-70 cursor-not-allowed"
             : "cursor-pointer hover:border-emerald-500/40 dark:hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/10"
         }`}
     >
-      <div className="relative w-full aspect-video overflow-hidden">
+      <div className="relative w-full aspect-video overflow-hidden shrink-0">
         {meal.image ? (
           <Image
             src={meal.image}
@@ -109,7 +109,7 @@ export function MealCard({ meal }: { meal: Meal }) {
         </div>
       </div>
 
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2 flex flex-col flex-1">
         <p className="text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">
           {meal.category.name}
         </p>
@@ -122,7 +122,7 @@ export function MealCard({ meal }: { meal: Meal }) {
           🏪 {meal.provider.businessName}
         </p>
 
-        <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center justify-between pt-1 mt-auto">
           <span className="text-lg font-bold text-emerald-500 dark:text-emerald-400">
             ৳{meal.price}
           </span>

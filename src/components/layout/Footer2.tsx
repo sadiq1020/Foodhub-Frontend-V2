@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 // ─── Data ───────────────────────────────────────────────────────────────────
 
@@ -34,16 +35,12 @@ const NAV_SECTIONS = [
     title: "Company",
     links: [
       { label: "About Us", href: "/about" },
-      { label: "Blog", href: "/blog" },
-      { label: "Careers", href: "#" },
-      { label: "Press", href: "#" },
+      { label: "Contact Us", href: "/contact" },
     ],
   },
   {
-    title: "Support",
+    title: "Legal",
     links: [
-      { label: "Help Center", href: "/help" },
-      { label: "Contact Us", href: "/contact" },
       { label: "Privacy Policy", href: "/privacy" },
       { label: "Terms of Service", href: "/terms" },
     ],
@@ -51,10 +48,10 @@ const NAV_SECTIONS = [
 ];
 
 const SOCIALS = [
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Youtube, href: "#", label: "YouTube" },
+  { icon: Facebook, href: "https://www.facebook.com/sadiqIbnmasud/", label: "Facebook" },
+  { icon: Instagram, href: "https://www.instagram.com/sadiqibnmasud/", label: "Instagram" },
+  { icon: Twitter, href: "https://x.com/sadiq_ibn_masud", label: "Twitter" },
+  { icon: Youtube, href: "https://www.youtube.com/", label: "YouTube" },
 ];
 
 const STATS = [
@@ -81,15 +78,41 @@ const fadeUp: Variants = {
 
 function NewsletterInput() {
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("foodhub_newsletter_subscribed")) {
+      setIsSubscribed(true);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setSent(true);
+
+    toast.success("Thanks for subscribing! We'll send the best food deals your way.", {
+      icon: "🎉",
+    });
+
+    setIsSubscribed(true);
     setEmail("");
-    setTimeout(() => setSent(false), 3500);
+    localStorage.setItem("foodhub_newsletter_subscribed", "true");
   };
+
+  if (isSubscribed) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-3 px-4 py-3 mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+      >
+        <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+          <Send className="w-4 h-4" />
+        </div>
+        <p className="text-sm font-medium">You're already on our list! 🎉</p>
+      </motion.div>
+    );
+  }
 
   return (
     <form
@@ -103,6 +126,7 @@ function NewsletterInput() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
+          required
           className="
             w-full pl-10 pr-4 py-2.5 rounded-xl text-sm
             bg-zinc-100 dark:bg-zinc-800
@@ -124,14 +148,8 @@ function NewsletterInput() {
           transition-colors duration-200 shrink-0 cursor-pointer
         "
       >
-        {sent ? (
-          "✓ Subscribed!"
-        ) : (
-          <>
-            <Send className="w-3.5 h-3.5" />
-            Subscribe
-          </>
-        )}
+        <Send className="w-3.5 h-3.5" />
+        Subscribe
       </motion.button>
     </form>
   );
