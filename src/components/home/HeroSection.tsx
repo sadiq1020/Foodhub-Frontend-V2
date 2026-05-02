@@ -87,7 +87,7 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden bg-zinc-950">
+    <section className="relative min-h-svh flex items-center justify-center overflow-hidden bg-zinc-950">
       {/* Moving grid background */}
       <div
         className="absolute inset-0 opacity-[0.03]"
@@ -102,7 +102,7 @@ export function HeroSection() {
 
       {/* Glow orbs */}
       <div
-        className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] rounded-full pointer-events-none"
+        className="absolute top-[-10%] left-[-5%] w-150 h-150 rounded-full pointer-events-none"
         style={{
           background:
             "radial-gradient(circle, rgba(0,214,143,0.12) 0%, transparent 70%)",
@@ -110,7 +110,7 @@ export function HeroSection() {
         }}
       />
       <div
-        className="absolute bottom-[-15%] right-[-5%] w-[700px] h-[700px] rounded-full pointer-events-none"
+        className="absolute bottom-[-15%] right-[-5%] w-175 h-175 rounded-full pointer-events-none"
         style={{
           background:
             "radial-gradient(circle, rgba(20,184,166,0.1) 0%, transparent 70%)",
@@ -223,7 +223,7 @@ export function HeroSection() {
             onSubmit={handleSearch}
             className="relative flex items-center max-w-lg mx-auto mb-8 group"
           >
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-emerald-500/20 to-cyan-500/20 blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
             <div className="relative flex items-center w-full bg-zinc-900 border border-zinc-700 group-focus-within:border-emerald-500/60 rounded-2xl px-4 py-3 gap-3 transition-colors duration-300">
               <Search className="w-5 h-5 text-zinc-500 shrink-0" />
               <Input
@@ -305,7 +305,7 @@ export function HeroSection() {
       </div>
 
       {/* Bottom fade to page bg */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-background to-transparent pointer-events-none" />
     </section>
   );
 }
