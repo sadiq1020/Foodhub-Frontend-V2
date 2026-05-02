@@ -87,7 +87,7 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-svh flex items-center justify-center overflow-hidden bg-zinc-950">
+    <section className="relative min-h-svh flex items-center justify-center overflow-hidden bg-zinc-50 dark:bg-zinc-950">
       {/* Moving grid background */}
       <div
         className="absolute inset-0 opacity-[0.03]"
@@ -126,7 +126,7 @@ export function HeroSection() {
         {["🍜 Pad Thai", "🍕 Margherita", "🌮 Street Tacos"].map((item, i) => (
           <div
             key={item}
-            className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-200 border border-zinc-700/60 bg-zinc-900/80 backdrop-blur-sm"
+            className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm"
             style={{
               opacity: 0,
               animation: `heroFadeUp 0.6s ease forwards`,
@@ -161,7 +161,7 @@ export function HeroSection() {
 
         {/* Headline */}
         <div style={fu(250)}>
-          <h1 className="text-[clamp(2.6rem,7vw,5.5rem)] font-black leading-[0.95] tracking-tight mb-8 text-white">
+          <h1 className="text-[clamp(2.6rem,7vw,5.5rem)] font-black leading-[0.95] tracking-tight mb-8 text-zinc-900 dark:text-white">
             Food that feels
             <br />
             <span className="relative inline-block mt-2">
@@ -211,7 +211,7 @@ export function HeroSection() {
 
         {/* Subheadline */}
         <div style={fu(420)}>
-          <p className="text-lg md:text-xl text-zinc-400 max-w-xl mx-auto mb-10 leading-relaxed font-light">
+          <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto mb-10 leading-relaxed font-light">
             Local cooks. Homemade recipes. Delivered fresh to your door — every
             single day.
           </p>
@@ -224,14 +224,14 @@ export function HeroSection() {
             className="relative flex items-center max-w-lg mx-auto mb-8 group"
           >
             <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-emerald-500/20 to-cyan-500/20 blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            <div className="relative flex items-center w-full bg-zinc-900 border border-zinc-700 group-focus-within:border-emerald-500/60 rounded-2xl px-4 py-3 gap-3 transition-colors duration-300">
-              <Search className="w-5 h-5 text-zinc-500 shrink-0" />
+            <div className="relative flex items-center w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 group-focus-within:border-emerald-500/60 rounded-2xl px-4 py-3 gap-3 transition-colors duration-300">
+              <Search className="w-5 h-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
               <Input
                 type="text"
                 placeholder="Search biriyani, pizza, sushi..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="border-0 bg-transparent shadow-none focus-visible:ring-0 placeholder:text-zinc-600 text-zinc-100 flex-1 p-0 text-base"
+                className="border-0 bg-transparent shadow-none focus-visible:ring-0 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 text-zinc-900 dark:text-zinc-100 flex-1 p-0 text-base"
               />
               <Button
                 type="submit"
@@ -268,7 +268,7 @@ export function HeroSection() {
               asChild
               size="lg"
               variant="outline"
-              className="rounded-xl px-8 h-12 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white hover:bg-zinc-800 transition-all duration-200"
+              className="rounded-xl px-8 h-12 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200"
             >
               <Link href="/providers">Meet Our Cooks</Link>
             </Button>
@@ -293,7 +293,7 @@ export function HeroSection() {
                   <Icon className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-white leading-none">
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white leading-none">
                     {item.label}
                   </p>
                   <p className="text-xs text-zinc-500 mt-0.5">{item.sub}</p>

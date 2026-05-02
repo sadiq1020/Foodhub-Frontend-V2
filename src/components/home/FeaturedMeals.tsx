@@ -46,7 +46,7 @@ export function FeaturedMeals() {
   }, []);
 
   return (
-    <section className="py-24 bg-zinc-950 relative overflow-hidden">
+    <section className="py-24 bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden">
       {/* Ambient glow */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full pointer-events-none"
@@ -71,14 +71,14 @@ export function FeaturedMeals() {
             <p className="text-emerald-400 text-xs font-semibold tracking-widest uppercase mb-2">
               Handpicked for you
             </p>
-            <h2 className="text-4xl md:text-5xl font-bold text-white">
+            <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
               Featured meals
             </h2>
           </div>
           <Button
             asChild
             variant="outline"
-            className="rounded-xl border-zinc-700 text-zinc-300 hover:border-emerald-500/50 hover:text-emerald-400 hover:bg-emerald-500/5 transition-all duration-200 shrink-0"
+            className="rounded-xl border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/5 transition-all duration-200 shrink-0"
           >
             <Link href="/meals">View all meals →</Link>
           </Button>
@@ -90,16 +90,16 @@ export function FeaturedMeals() {
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl overflow-hidden border border-zinc-800"
+                className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800"
               >
-                <Skeleton className="aspect-video w-full bg-zinc-800" />
-                <div className="p-4 space-y-2 bg-zinc-900">
-                  <Skeleton className="h-4 w-20 bg-zinc-800" />
-                  <Skeleton className="h-5 w-3/4 bg-zinc-800" />
-                  <Skeleton className="h-4 w-1/2 bg-zinc-800" />
+                <Skeleton className="aspect-video w-full bg-zinc-200 dark:bg-zinc-800" />
+                <div className="p-4 space-y-2 bg-white dark:bg-zinc-900">
+                  <Skeleton className="h-4 w-20 bg-zinc-200 dark:bg-zinc-800" />
+                  <Skeleton className="h-5 w-3/4 bg-zinc-200 dark:bg-zinc-800" />
+                  <Skeleton className="h-4 w-1/2 bg-zinc-200 dark:bg-zinc-800" />
                   <div className="flex justify-between pt-2">
-                    <Skeleton className="h-6 w-16 bg-zinc-800" />
-                    <Skeleton className="h-9 w-24 rounded-xl bg-zinc-800" />
+                    <Skeleton className="h-6 w-16 bg-zinc-200 dark:bg-zinc-800" />
+                    <Skeleton className="h-9 w-24 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
                   </div>
                 </div>
               </div>

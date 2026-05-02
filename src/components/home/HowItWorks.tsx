@@ -60,7 +60,7 @@ export function HowItWorks() {
   const { ref: headerRef, visible: headerVisible } = useVisible(0.3);
 
   return (
-    <section className="py-24 bg-zinc-950 relative overflow-hidden">
+    <section className="py-24 bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden">
       {/* Subtle top border line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 bg-linear-to-b from-transparent to-emerald-500/40" />
 
@@ -78,7 +78,7 @@ export function HowItWorks() {
           <p className="text-emerald-400 text-xs font-semibold tracking-widest uppercase mb-3">
             Simple process
           </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4">
             How it works
           </h2>
           <p className="text-zinc-500 max-w-sm mx-auto">
@@ -126,12 +126,12 @@ function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
       </span>
 
       {/* Icon */}
-      <div className="relative w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-800 group-hover:border-emerald-500/40 flex items-center justify-center mb-5 transition-all duration-300 group-hover:bg-emerald-500/5 group-hover:shadow-lg group-hover:shadow-emerald-500/10">
-        <Icon className="w-8 h-8 text-zinc-400 group-hover:text-emerald-400 transition-colors duration-300" />
+      <div className="relative w-20 h-20 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 group-hover:border-emerald-500/40 flex items-center justify-center mb-5 transition-all duration-300 group-hover:bg-emerald-500/5 group-hover:shadow-lg group-hover:shadow-emerald-500/10">
+        <Icon className="w-8 h-8 text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors duration-300" />
       </div>
 
-      <h3 className="text-base font-semibold text-white mb-2">{step.title}</h3>
-      <p className="text-sm text-zinc-500 leading-relaxed max-w-45">
+      <h3 className="text-base font-semibold text-zinc-900 dark:text-white mb-2">{step.title}</h3>
+      <p className="text-sm text-zinc-600 dark:text-zinc-500 leading-relaxed max-w-45">
         {step.description}
       </p>
     </div>

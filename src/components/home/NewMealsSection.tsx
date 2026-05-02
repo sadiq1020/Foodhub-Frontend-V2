@@ -77,11 +77,11 @@ function MarqueeCard({ meal }: { meal: Meal }) {
     <Link
       href={`/meals/${meal.id}`}
       // w-72 = fixed card width so the marquee math works
-      className="group relative flex flex-col w-72 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 hover:border-emerald-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 shrink-0"
+      className="group relative flex flex-col w-72 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 shrink-0"
     >
       {/* ── Image ── */}
       <div
-        className="relative h-44 overflow-hidden bg-zinc-800 shrink-0"
+        className="relative h-44 overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0"
         onMouseEnter={() => setImgHovered(true)}
         onMouseLeave={() => setImgHovered(false)}
       >
@@ -96,13 +96,13 @@ function MarqueeCard({ meal }: { meal: Meal }) {
             }`}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-emerald-950/40 to-zinc-900">
+          <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-emerald-100 to-zinc-100 dark:from-emerald-950/40 dark:to-zinc-900">
             <span className="text-4xl">🍽️</span>
           </div>
         )}
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-linear-to-t from-zinc-900/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-zinc-900/60 dark:from-zinc-900/80 via-transparent to-transparent" />
 
         {/* NEW badge */}
         <div className="absolute top-3 left-3 z-10">
@@ -140,7 +140,7 @@ function MarqueeCard({ meal }: { meal: Meal }) {
         </p>
 
         {/* Name */}
-        <h3 className="font-bold text-zinc-100 group-hover:text-emerald-400 transition-colors duration-200 line-clamp-1 text-sm">
+        <h3 className="font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-200 line-clamp-1 text-sm">
           {meal.name}
         </h3>
 
@@ -159,8 +159,8 @@ function MarqueeCard({ meal }: { meal: Meal }) {
         </div>
 
         {/* Price + cart */}
-        <div className="flex items-center justify-between mt-auto pt-2 border-t border-zinc-800">
-          <span className="text-base font-bold text-emerald-400">
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">
             ৳{meal.price}
           </span>
           <motion.button
@@ -181,15 +181,15 @@ function MarqueeCard({ meal }: { meal: Meal }) {
 // ─── Skeleton card ────────────────────────────────────────────────────────────
 function MarqueeSkeleton() {
   return (
-    <div className="w-72 shrink-0 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 animate-pulse">
-      <div className="h-44 bg-zinc-800" />
+    <div className="w-72 shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 animate-pulse">
+      <div className="h-44 bg-zinc-200 dark:bg-zinc-800" />
       <div className="p-4 space-y-3">
-        <div className="h-2.5 w-16 bg-zinc-800 rounded" />
-        <div className="h-4 w-3/4 bg-zinc-800 rounded" />
-        <div className="h-3 w-1/2 bg-zinc-800 rounded" />
-        <div className="flex justify-between items-center pt-2 border-t border-zinc-800">
-          <div className="h-5 w-12 bg-zinc-800 rounded" />
-          <div className="h-7 w-16 bg-zinc-800 rounded-full" />
+        <div className="h-2.5 w-16 bg-zinc-200 dark:bg-zinc-800 rounded" />
+        <div className="h-4 w-3/4 bg-zinc-200 dark:bg-zinc-800 rounded" />
+        <div className="h-3 w-1/2 bg-zinc-200 dark:bg-zinc-800 rounded" />
+        <div className="flex justify-between items-center pt-2 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="h-5 w-12 bg-zinc-200 dark:bg-zinc-800 rounded" />
+          <div className="h-7 w-16 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
         </div>
       </div>
     </div>
@@ -254,9 +254,9 @@ function MarqueeTrack({
       onMouseLeave={handleMouseLeave}
     >
       {/* Left fade edge */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none bg-linear-to-r from-zinc-950 to-transparent" />
+      <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none bg-linear-to-r from-zinc-50 dark:from-zinc-950 to-transparent" />
       {/* Right fade edge */}
-      <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none bg-linear-to-l from-zinc-950 to-transparent" />
+      <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none bg-linear-to-l from-zinc-50 dark:from-zinc-950 to-transparent" />
 
       {/* Pause indicator */}
       {paused && (
@@ -264,7 +264,7 @@ function MarqueeTrack({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute top-3 right-28 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-700 backdrop-blur-sm text-xs text-zinc-400"
+          className="absolute top-3 right-28 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-700 backdrop-blur-sm text-xs text-zinc-600 dark:text-zinc-400"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           Paused
@@ -307,7 +307,7 @@ export function NewMealsSection() {
   if (!isLoading && meals.length === 0) return null;
 
   return (
-    <section ref={ref} className="relative py-20 bg-zinc-950 overflow-hidden">
+    <section ref={ref} className="relative py-20 bg-zinc-50 dark:bg-zinc-950 overflow-hidden">
       {/* Same ambient glow as FeaturedMeals */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-75 rounded-full pointer-events-none"
@@ -318,7 +318,7 @@ export function NewMealsSection() {
       />
 
       {/* Thin divider line at top */}
-      <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-zinc-800 to-transparent pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent pointer-events-none" />
 
       <div className="container mx-auto px-4 relative">
         {/* Header */}
@@ -333,8 +333,8 @@ export function NewMealsSection() {
               <Sparkles className="w-3.5 h-3.5" />
               Just added
             </p>
-            <h2 className="text-4xl md:text-5xl font-bold text-white">
-              New on <span className="text-emerald-400">FoodHub</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+              New on <span className="text-emerald-500 dark:text-emerald-400">FoodHub</span>
             </h2>
             <p className="text-zinc-500 text-sm mt-2">
               The freshest additions — hover to pause, click to explore.
@@ -343,7 +343,7 @@ export function NewMealsSection() {
 
           <Link
             href="/meals?sortBy=createdAt&sortOrder=desc"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-700 text-zinc-400 hover:border-emerald-500/50 hover:text-emerald-400 hover:bg-emerald-500/5 transition-all duration-200 text-sm font-medium shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/5 transition-all duration-200 text-sm font-medium shrink-0"
           >
             See all new meals
             <ArrowRight className="w-3.5 h-3.5" />

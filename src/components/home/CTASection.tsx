@@ -127,7 +127,7 @@ function CTACard({
             ? // Customer card: solid emerald — the primary action
               "bg-emerald-500 text-white shadow-2xl shadow-emerald-900/40"
             : // Provider card: dark glass — secondary but distinguished
-              "bg-zinc-900/80 dark:bg-zinc-900 text-white border border-zinc-700/60 dark:border-zinc-700 shadow-xl"
+              "bg-white/80 dark:bg-zinc-900/80 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700/60 shadow-xl"
         }
       `}
     >
@@ -170,7 +170,7 @@ function CTACard({
         </span>
         <h3 className="text-2xl font-bold leading-snug">{heading}</h3>
         <p
-          className={`text-sm leading-relaxed ${isCustomer ? "text-emerald-50/80" : "text-zinc-400"}`}
+          className={`text-sm leading-relaxed ${isCustomer ? "text-emerald-50/80" : "text-zinc-600 dark:text-zinc-400"}`}
         >
           {sub}
         </p>
@@ -186,7 +186,7 @@ function CTACard({
               }`}
             />
             <span
-              className={isCustomer ? "text-emerald-50/90" : "text-zinc-300"}
+              className={isCustomer ? "text-emerald-50/90" : "text-zinc-700 dark:text-zinc-300"}
             >
               {perk}
             </span>
@@ -224,7 +224,7 @@ export function CTASection() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} className="relative py-24 overflow-hidden bg-zinc-950">
+    <section ref={ref} className="relative py-24 overflow-hidden bg-zinc-50 dark:bg-zinc-950">
       {/* ── Background: deep gradient ── */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.12)_0%,transparent_65%)] pointer-events-none" />
 
@@ -266,10 +266,10 @@ export function CTASection() {
           transition={{ duration: 0.55, delay: 0.08, ease: EASE }}
           className="text-center mb-14"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
-            Ready to get <span className="text-emerald-400">started?</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white leading-tight mb-4">
+            Ready to get <span className="text-emerald-500 dark:text-emerald-400">started?</span>
           </h2>
-          <p className="text-zinc-400 max-w-lg mx-auto text-sm md:text-base">
+          <p className="text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto text-sm md:text-base">
             Whether you&apos;re craving a great meal or want to share your
             cooking with the world — FoodHub has a place for you.
           </p>
