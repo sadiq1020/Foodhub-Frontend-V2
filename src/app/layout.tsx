@@ -1,3 +1,4 @@
+import { AIChatbot } from "@/components/chat/AIChatbot";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { SessionRefresher } from "@/components/SessionRefresher";
@@ -40,11 +41,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionRefresher />
-          {/* Navbar is fixed — children need top padding to not go under it */}
           <Navbar />
           <main className="pt-16">{children}</main>
           <Toaster />
           <Footer />
+          {/* AI Chatbot — floats above everything, visible on all pages */}
+          <AIChatbot />
         </ThemeProvider>
       </body>
     </html>

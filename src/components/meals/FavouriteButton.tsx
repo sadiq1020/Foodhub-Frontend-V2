@@ -9,37 +9,39 @@ import { toast } from "sonner";
 
 interface FavouriteButtonProps {
   mealId: string;
-  // Optional: size variant for use in different contexts
   size?: "sm" | "md";
 }
 
 export function FavouriteButton({ mealId, size = "md" }: FavouriteButtonProps) {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const router = useRouter();
   const [isFavourited, setIsFavourited] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Check if already favourited on mount
+  // Only customers can use favourites — admins/providers get 403 from backend
+  const isCustomer = session?.user?.role === "CUSTOMER";
+
   useEffect(() => {
-    if (!session?.user) return;
+    // Skip if: session still loading, no user logged in, or not a customer role
+    if (isPending || !session?.user || !isCustomer) return;
 
     const check = async () => {
       try {
         const data = await api.get(`/favourites/${mealId}/check`);
         setIsFavourited(data.data?.isFavourited ?? false);
       } catch {
-        // ignore — user might not be logged in
+        // ignore silently
       }
     };
 
     check();
-  }, [mealId, session?.user]);
+  }, [mealId, session?.user, isPending, isCustomer]);
 
   const handleToggle = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // prevent card click navigation
+    e.stopPropagation();
 
-    if (!session?.user) {
-      toast.error("Please login to save meals", {
+    if (!session?.user || !isCustomer) {
+      toast.error("Please login as a customer to save meals", {
         action: {
           label: "Login",
           onClick: () => router.push("/login"),
