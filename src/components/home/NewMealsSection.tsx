@@ -317,10 +317,28 @@ export function NewMealsSection() {
         }}
       />
 
-      {/* Thin divider line at top */}
-      <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent pointer-events-none" />
+      {/* Moving striped background */}
+      <style>{`
+        @keyframes slideStripesNM {
+          0% { background-position: 0 0; }
+          100% { background-position: 40px 40px; }
+        }
+      `}</style>
+      <div
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03] pointer-events-none z-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(45deg, var(--color-zinc-500) 0, var(--color-zinc-500) 1px, transparent 1px, transparent 20px)",
+          animation: "slideStripesNM 10s linear infinite",
+          maskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
+        }}
+      />
 
-      <div className="container mx-auto px-4 relative">
+      {/* Thin divider line at top */}
+      <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent pointer-events-none z-0" />
+
+      <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <motion.div
           initial="hidden"

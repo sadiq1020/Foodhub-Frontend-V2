@@ -2,6 +2,7 @@
 
 import { api } from "@/lib/api";
 import { Category } from "@/types";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -25,6 +26,45 @@ function useVisible() {
     return () => obs.disconnect();
   }, []);
   return { ref, visible };
+}
+
+const CATEGORY_PARTICLES = [
+  { emoji: "🍔", style: { top: "15%", left: "5%" }, duration: 4.5, delay: 0 },
+  { emoji: "🍹", style: { top: "65%", right: "8%" }, duration: 5.2, delay: 1 },
+  { emoji: "🍰", style: { top: "25%", right: "12%" }, duration: 4.1, delay: 0.5 },
+  { emoji: "🥑", style: { top: "75%", left: "10%" }, duration: 5.8, delay: 1.5 },
+];
+
+function FloatingEmoji({
+  emoji,
+  style,
+  duration,
+  delay,
+}: {
+  emoji: string;
+  style: React.CSSProperties;
+  duration: number;
+  delay: number;
+}) {
+  return (
+    <motion.span
+      className="absolute text-4xl select-none pointer-events-none z-0"
+      style={style}
+      animate={{
+        y: [0, -25, 0],
+        rotate: [-8, 8, -8],
+        opacity: [0.15, 0.3, 0.15],
+      }}
+      transition={{
+        duration,
+        delay,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      {emoji}
+    </motion.span>
+  );
 }
 
 function CategoryCard({
@@ -100,8 +140,27 @@ export function CategoriesSection() {
   }, []);
 
   return (
-    <section className="py-24 bg-background relative">
-      <div className="container mx-auto px-4">
+    <section className="py-24 bg-background relative overflow-hidden">
+      {/* Animated Glow Orbs */}
+      <motion.div
+        animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.6, 0.4] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%)" }}
+      />
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(20,184,166,0.04) 0%, transparent 70%)" }}
+      />
+
+      {/* Floating moving emojis */}
+      {CATEGORY_PARTICLES.map((p, i) => (
+        <FloatingEmoji key={i} {...p} />
+      ))}
+
+      <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div
           ref={headerRef as React.RefObject<HTMLDivElement>}

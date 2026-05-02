@@ -4,9 +4,28 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { Meal } from "@/types";
+import { motion } from "framer-motion";
+import { Flame, Heart, Star } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { MealCard } from "../meals/MealCard";
+
+function FloatingIcon({ Icon, style, duration, delay }: any) {
+  return (
+    <motion.div
+      className="absolute text-emerald-500/20 dark:text-emerald-500/10 pointer-events-none select-none z-0"
+      style={style}
+      animate={{
+        y: [0, -25, 0],
+        rotate: [-15, 15, -15],
+        scale: [1, 1.1, 1],
+      }}
+      transition={{ duration, delay, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <Icon className="w-16 h-16" />
+    </motion.div>
+  );
+}
 
 function useVisible() {
   const ref = useRef<HTMLDivElement>(null);
@@ -56,7 +75,13 @@ export function FeaturedMeals() {
         }}
       />
 
-      <div className="container mx-auto px-4 relative">
+      {/* Floating moving icons */}
+      <FloatingIcon Icon={Star} style={{ top: "15%", left: "10%" }} duration={5} delay={0} />
+      <FloatingIcon Icon={Flame} style={{ top: "60%", right: "8%" }} duration={6} delay={1} />
+      <FloatingIcon Icon={Heart} style={{ top: "25%", right: "15%" }} duration={5.5} delay={0.5} />
+      <FloatingIcon Icon={Star} style={{ bottom: "10%", left: "20%" }} duration={4.5} delay={2} />
+
+      <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div
           ref={headerRef}

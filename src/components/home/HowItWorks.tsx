@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   UtensilsCrossed,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 const steps = [
@@ -61,10 +62,43 @@ export function HowItWorks() {
 
   return (
     <section className="py-24 bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden">
+      {/* Animated Background Gradients */}
+      <motion.div
+        animate={{ x: [0, 30, 0], y: [0, -30, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-[20%] left-[10%] w-[400px] h-[400px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 70%)" }}
+      />
+      <motion.div
+        animate={{ x: [0, -40, 0], y: [0, 20, 0] }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(6,182,212,0.04) 0%, transparent 70%)" }}
+      />
+
+      {/* Moving Grid Background */}
+      <style>{`
+        @keyframes panGridHIW {
+          0% { background-position: 0px 0px; }
+          100% { background-position: 60px 60px; }
+        }
+      `}</style>
+      <div
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.03] pointer-events-none z-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--color-zinc-500) 1px, transparent 1px), linear-gradient(90deg, var(--color-zinc-500) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+          maskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
+          animation: "panGridHIW 20s linear infinite",
+        }}
+      />
+
       {/* Subtle top border line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 bg-linear-to-b from-transparent to-emerald-500/40" />
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div
           ref={headerRef}
