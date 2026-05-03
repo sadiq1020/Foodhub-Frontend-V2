@@ -79,8 +79,16 @@ export function LoginForm() {
     toast.info("Demo credentials filled — click Login to continue.");
   };
 
-  const handleGoogleLogin = () => {
-    toast.info("Google login is temporarily disabled.");
+  const handleGoogleLogin = async () => {
+    const toastId = toast.loading("Redirecting to Google...");
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: window.location.origin, // Redirect back to frontend home
+      });
+    } catch (error) {
+      toast.error("Google login failed", { id: toastId });
+    }
   };
 
   const onSubmit = async (data: LoginFormData) => {
@@ -196,12 +204,10 @@ export function LoginForm() {
         </div>
       </div>
 
-      {/* Google disabled */}
       <button
         type="button"
         onClick={handleGoogleLogin}
-        disabled
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-zinc-700 text-zinc-500 text-sm opacity-50 cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800/50 text-zinc-300 text-sm hover:bg-zinc-800 hover:border-zinc-600 transition-all duration-200"
       >
         <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
           <path
@@ -221,7 +227,7 @@ export function LoginForm() {
             fill="#EA4335"
           />
         </svg>
-        Continue with Google (Disabled)
+        Continue with Google
       </button>
 
       {/* Submit */}
