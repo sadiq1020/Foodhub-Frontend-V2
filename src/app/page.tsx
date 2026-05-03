@@ -1,3 +1,4 @@
+import { AIRecommendations } from "@/components/home/AIRecommendations";
 import { CategoriesSection } from "@/components/home/CategoriesSection";
 import { CTASection } from "@/components/home/CTASection";
 import { FAQSection } from "@/components/home/FAQSection";
@@ -17,6 +18,7 @@ export default function Home() {
       <CategoriesSection />
       {/* <Suspense fallback={<FeaturedMealsSkeleton />}> */}
       <FeaturedMeals />
+        <AIRecommendations />
       {/* </Suspense> */}
       <NewMealsSection />
       <HowItWorks />
