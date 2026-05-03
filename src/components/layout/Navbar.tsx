@@ -40,6 +40,7 @@ import { ModeToggle } from "./ModeToggle";
 const PUBLIC_NAV_LINKS = [
   { title: "Browse Meals", url: "/meals" },
   { title: "Providers", url: "/provider-profile" },
+  { title: "Blog", url: "/blog" },
   { title: "About", url: "/about" },
 ];
 
