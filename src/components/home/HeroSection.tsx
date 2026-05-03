@@ -48,6 +48,22 @@ const KEYFRAMES = `
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.3; }
 }
+@keyframes taglineIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes taglineOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-16px); }
+}
+@keyframes pillSlideIn {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pillSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-18px); }
+}
 `;
 
 function fu(delay: number): React.CSSProperties {
@@ -64,9 +80,24 @@ const TRUST_ITEMS = [
   { icon: Shield, label: "Safe & fresh", sub: "guaranteed" },
 ];
 
+// Rotating taglines — swap the last phrase in the headline
+const TAGLINES = ["like home.", "like love.", "like joy.", "like comfort."];
+
+// Cycling food pills shown on the right decorative column
+const FOOD_PILLS = [
+  ["🍛 Beef Biryani", "🍜 Noodle Soup",    "🥘 Chicken Curry"],
+  ["🌮 Street Tacos",  "🍱 Bento Box",      "🧆 Falafel Wrap"],
+  ["🍲 Dal Tadka",     "🫕 Butter Chicken", "🥗 Thai Salad"],
+  ["🍕 Margherita",    "🦐 Prawn Fry",      "🍔 Smash Burger"],
+];
+
 export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const [taglineIdx, setTaglineIdx] = useState(0);
+  const [taglineAnim, setTaglineAnim] = useState<"in" | "out">("in");
+  const [pillSetIdx, setPillSetIdx] = useState(0);
+  const [pillAnim, setPillAnim] = useState<"in" | "out">("in");
 
   useEffect(() => {
     if (document.getElementById("hero-kf-v2")) return;
@@ -75,6 +106,33 @@ export function HeroSection() {
     s.textContent = KEYFRAMES;
     document.head.appendChild(s);
     return () => s.remove();
+  }, []);
+
+  // Rotate taglines every 2.8s: fade-out → swap → fade-in
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTaglineAnim("out");
+      setTimeout(() => {
+        setTaglineIdx((i) => (i + 1) % TAGLINES.length);
+        setTaglineAnim("in");
+      }, 320);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Cycle food pills every 2.2s (offset from tagline)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        setPillAnim("out");
+        setTimeout(() => {
+          setPillSetIdx((i) => (i + 1) % FOOD_PILLS.length);
+          setPillAnim("in");
+        }, 260);
+      }, 2200);
+      return () => clearInterval(interval);
+    }, 1400);
+    return () => clearTimeout(timeout);
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -118,19 +176,20 @@ export function HeroSection() {
         }}
       />
 
-      {/* Floating food cards — decorative, right side */}
+      {/* Floating food cards — decorative, right side — auto-cycling */}
       <div
         className="absolute right-[4%] top-[18%] hidden xl:flex flex-col gap-3 pointer-events-none"
         style={{ animation: "floatY 6s ease-in-out infinite" }}
       >
-        {["🍜 Pad Thai", "🍕 Margherita", "🌮 Street Tacos"].map((item, i) => (
+        {FOOD_PILLS[pillSetIdx].map((item, i) => (
           <div
             key={item}
             className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm"
             style={{
-              opacity: 0,
-              animation: `heroFadeUp 0.6s ease forwards`,
-              animationDelay: `${1200 + i * 150}ms`,
+              animation: pillAnim === "in"
+                ? `pillSlideIn 0.28s cubic-bezier(0.16,1,0.3,1) ${i * 60}ms forwards`
+                : `pillSlideOut 0.22s ease ${i * 40}ms forwards`,
+              opacity: pillAnim === "in" ? 0 : 1,
             }}
           >
             {item}
@@ -166,18 +225,21 @@ export function HeroSection() {
             <br />
             <span className="relative inline-block mt-2">
               <span
+                key={taglineIdx}
                 style={{
+                  display: "inline-block",
                   background:
                     "linear-gradient(135deg, #00d68f 0%, #14b8a6 50%, #06b6d4 100%)",
                   backgroundSize: "200% auto",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
-                  animation: "shimmer 4s linear infinite",
-                  animationDelay: "1000ms",
+                  animation: taglineAnim === "in"
+                    ? `taglineIn 0.32s cubic-bezier(0.16,1,0.3,1) forwards, shimmer 4s 1000ms linear infinite`
+                    : `taglineOut 0.22s ease forwards`,
                 }}
               >
-                like home.
+                {TAGLINES[taglineIdx]}
               </span>
               {/* Animated underline */}
               <svg
