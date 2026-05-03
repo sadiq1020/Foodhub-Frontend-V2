@@ -1,6 +1,6 @@
 "use client";
 
-import { FavouriteButton } from "@/components/meals/FavouriteButton"; // ← add
+import { FavouriteButton } from "@/components/meals/FavouriteButton";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
@@ -15,6 +15,10 @@ export function MealCard({ meal }: { meal: Meal }) {
   const router = useRouter();
   const { addToCart } = useCart();
   const { data: session } = useSession();
+
+  const role = (session?.user as { role?: string })?.role;
+  const isCustomer = role === "CUSTOMER";
+  const isLoggedIn = !!session?.user;
 
   const getDietaryColor = (dietary: string | null | undefined) => {
     if (!dietary || typeof dietary !== "string")
@@ -31,13 +35,16 @@ export function MealCard({ meal }: { meal: Meal }) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (!session?.user) {
-      toast.error("Please login to add items to cart", {
-        action: {
-          label: "Login",
-          onClick: () => router.push("/login"),
-        },
-      });
+    if (!isLoggedIn) {
+      toast.error("Please login to add items to cart");
+      return;
+    }
+
+    if (!isCustomer) {
+      toast.warning(
+        `You're logged in as a ${role?.toLowerCase()}. Please use a customer account to order meals.`,
+        { duration: 4000 }
+      );
       return;
     }
 
@@ -103,7 +110,6 @@ export function MealCard({ meal }: { meal: Meal }) {
           </div>
         )}
 
-        {/* ← Bookmark button — top right of image */}
         <div className="absolute top-2 right-2">
           <FavouriteButton mealId={meal.id} size="sm" />
         </div>

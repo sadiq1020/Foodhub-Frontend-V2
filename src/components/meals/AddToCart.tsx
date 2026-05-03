@@ -2,9 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
-import { useSession } from "@/lib/auth-client"; // ← Add
+import { useSession } from "@/lib/auth-client";
 import { Minus, Plus, ShoppingCart } from "lucide-react";
-import { useRouter } from "next/navigation"; // ← Add
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -19,21 +18,26 @@ type AddToCartMeal = {
 export function AddToCart({ meal }: { meal: AddToCartMeal }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
-  const { data: session } = useSession(); // ← Add
-  const router = useRouter(); // ← Add
+  const { data: session } = useSession();
 
   const decrease = () => setQuantity((q) => Math.max(1, q - 1));
   const increase = () => setQuantity((q) => Math.min(99, q + 1));
 
+  const role = (session?.user as { role?: string })?.role;
+  const isCustomer = role === "CUSTOMER";
+  const isLoggedIn = !!session?.user;
+
   const handleAddToCart = () => {
-    //  Check if logged in
-    if (!session?.user) {
-      toast.error("Please login to add items to cart", {
-        action: {
-          label: "Login",
-          onClick: () => router.push("/login"),
-        },
-      });
+    if (!isLoggedIn) {
+      toast.error("Please login to add items to cart");
+      return;
+    }
+
+    if (!isCustomer) {
+      toast.warning(
+        `You're logged in as a ${role?.toLowerCase()}. Please use a customer account to order meals.`,
+        { duration: 4000 }
+      );
       return;
     }
 
@@ -59,6 +63,12 @@ export function AddToCart({ meal }: { meal: AddToCartMeal }) {
       </div>
     );
   }
+
+  const buttonLabel = () => {
+    if (!isLoggedIn) return "Login to Order";
+    if (!isCustomer) return "Customer account required";
+    return `Add to Cart · ৳${quantity * meal.price}`;
+  };
 
   return (
     <div className="flex items-center gap-4">
@@ -87,10 +97,7 @@ export function AddToCart({ meal }: { meal: AddToCartMeal }) {
         className="flex-1 rounded-full bg-linear-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 text-zinc-950 h-11 gap-2"
       >
         <ShoppingCart className="w-4 h-4" />
-        {/*  Show different text based on login status */}
-        {session?.user
-          ? `Add to Cart · ৳${quantity * meal.price}`
-          : "Login to Add to Cart"}
+        {buttonLabel()}
       </Button>
     </div>
   );
