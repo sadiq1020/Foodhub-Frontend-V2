@@ -81,24 +81,43 @@ export default function OrderDetailPage({
   }, [session, isPending, router]);
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    let isMounted = true;
+    let pollCount = 0;
+    let pollTimer: NodeJS.Timeout;
+
+    const fetchOrder = async (isPolling = false) => {
       if (!session?.user) return;
 
       try {
-        setIsLoading(true);
-        const data = await api.get(`/orders/${id}`);
+        if (!isPolling) setIsLoading(true);
+        
+        // Add timestamp to bypass browser cache when polling
+        const cacheBuster = isPolling ? `?t=${Date.now()}` : "";
+        const data = await api.get(`/orders/${id}${cacheBuster}`);
         const fetchedOrder: Order = data.data || data;
+        
+        if (!isMounted) return;
         setOrder(fetchedOrder);
+
+        // If Stripe redirected with success but webhook hasn't updated the DB yet, poll a few times
+        const payment = searchParams.get("payment");
+        if (
+          payment === "success" &&
+          fetchedOrder.paymentStatus !== "PAID" &&
+          pollCount < 5
+        ) {
+          pollCount++;
+          pollTimer = setTimeout(() => fetchOrder(true), 2000);
+        }
 
         // Check which meals from this order have already been reviewed
         // by fetching each meal's reviews and checking if this customer reviewed it
-        if (fetchedOrder.status === "DELIVERED" && fetchedOrder.items) {
+        // Only run this on the initial load
+        if (!isPolling && fetchedOrder.status === "DELIVERED" && fetchedOrder.items) {
           const mealIds = fetchedOrder.items.map((item) => item.meal.id);
           const reviewChecks = await Promise.all(
             mealIds.map(async (mealId) => {
               try {
-                // GET /favourites/:mealId/check pattern — use reviews check endpoint
-                // Since we don't have a dedicated endpoint, check via meal detail
                 const mealData = await api.get(`/meals/${mealId}`);
                 const meal = mealData.data || mealData;
                 const reviews = meal.reviews || [];
@@ -112,14 +131,17 @@ export default function OrderDetailPage({
               }
             }),
           );
+          if (!isMounted) return;
           setReviewedMealIds(
             reviewChecks.filter((id): id is string => id !== null),
           );
         }
       } catch {
+        if (!isMounted) return;
         toast.error("Order not found");
         router.push("/orders");
       } finally {
+        if (!isMounted) return;
         setIsLoading(false);
       }
     };
@@ -127,7 +149,12 @@ export default function OrderDetailPage({
     if (session?.user) {
       fetchOrder();
     }
-  }, [session, id, router]);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(pollTimer);
+    };
+  }, [session, id, router, searchParams]);
 
   const handleCancelOrder = async () => {
     if (!order) return;
